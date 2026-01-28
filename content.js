@@ -4,13 +4,16 @@
 (function() {
   'use strict';
 
+  // Debug helper
+  console.log('[LeanGPT Content] Script loaded on:', window.location.href);
+
   // Configuration
-  let CONFIG = {
+    let CONFIG = {
     MAX_MESSAGES: 10,           // Keep only last 10 messages
     TRIM_DELAY: 1000,           // Delay before trimming (ms)
     OBSERVER_DEBOUNCE: 500,     // MutationObserver debounce (ms)
     SCROLL_THROTTLE: 100,       // Scroll event throttle (ms)
-    DEBUG: false,               // Enable debug logging
+    DEBUG: true,                // Enable debug logging (force on for debugging)
     ENABLED: true               // Extension enabled/disabled
   };
 
@@ -40,9 +43,8 @@
   // Utility functions
   const Utils = {
     log: function(message, level = 'info') {
-      if (CONFIG.DEBUG) {
-        console.log(`[LeanGPT ${level.toUpperCase()}]`, message);
-      }
+      // Always log for debugging
+      console.log(`[LeanGPT ${level.toUpperCase()}]`, message);
       
       // Send log to background script
       try {
@@ -51,7 +53,7 @@
           message: `[${level.toUpperCase()}] ${message}`
         });
       } catch (error) {
-        // Background script might not be available, that's okay
+        console.error('[LeanGPT] Background script communication error:', error);
       }
     },
 
@@ -294,19 +296,24 @@
   // Main initialization
   const LeanGPT = {
     init: function() {
+      console.log('[LeanGPT Content] init() called');
       Utils.log('Initializing LeanGPT...');
 
       if (!Utils.isChatGPTPage()) {
+        console.log('[LeanGPT Content] Not on ChatGPT page, skipping initialization');
         Utils.log('Not on ChatGPT page, skipping initialization');
         return;
       }
 
+      console.log('[LeanGPT Content] On ChatGPT page, proceeding with initialization...');
       // Load settings first
       if (!state.settingsLoaded) {
+        console.log('[LeanGPT Content] Settings not loaded, loading now...');
         loadSettings().then(() => {
           LeanGPT.initWithSettings();
         });
       } else {
+        console.log('[LeanGPT Content] Settings already loaded, initializing with settings...');
         LeanGPT.initWithSettings();
       }
     },
@@ -423,6 +430,7 @@
 
   // Listen for messages from background script
   chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    console.log('[LeanGPT Content] Received message:', request);
     Utils.log('Message from background: ' + request.action);
     
     switch (request.action) {
@@ -467,14 +475,20 @@
   });
 
   // Load settings on script load
+  console.log('[LeanGPT Content] Starting settings load...');
   loadSettings().then(() => {
+    console.log('[LeanGPT Content] Settings loaded, proceeding with initialization...');
     // Initialize when DOM is ready
     if (document.readyState === 'loading') {
+      console.log('[LeanGPT Content] DOM still loading, adding DOMContentLoaded listener');
       document.addEventListener('DOMContentLoaded', LeanGPT.init);
     } else {
+      console.log('[LeanGPT Content] DOM already loaded, initializing immediately');
       // DOM already loaded
       LeanGPT.init();
     }
+  }).catch(error => {
+    console.error('[LeanGPT Content] Failed to load settings:', error);
   });
 
   // Cleanup on page unload

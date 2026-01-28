@@ -78,20 +78,28 @@ document.addEventListener('DOMContentLoaded', function() {
             
             if (currentStatus.onChatGPT) {
                 try {
+                    console.log('[LeanGPT Popup] Attempting to communicate with content script...');
                     // Try to get status from content script
                     const response = await chrome.tabs.sendMessage(tab.id, { action: 'getStatus' });
+                    
+                    console.log('[LeanGPT Popup] Content script response:', response);
                     
                     if (response && response.status === 'success') {
                         currentStatus = {
                             ...currentStatus,
                             ...response.data
                         };
+                    } else {
+                        console.warn('[LeanGPT Popup] Content script responded with error:', response);
+                        currentStatus.isActive = false;
+                        currentStatus.messageCount = 0;
                     }
                 } catch (error) {
                     // Content script might not be ready
-                    console.log('[LeanGPT Popup] Content script not responding:', error.message);
+                    console.error('[LeanGPT Popup] Content script not responding:', error);
                     currentStatus.isActive = false;
                     currentStatus.messageCount = 0;
+                    elements.statusText.textContent = 'Content Script Error';
                 }
             } else {
                 currentStatus.isActive = false;
