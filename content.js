@@ -6,6 +6,17 @@
 
   // Debug helper
   console.log('[LeanGPT Content] Script loaded on:', window.location.href);
+  console.log('[LeanGPT Content] DOM ready state:', document.readyState);
+  console.log('[LeanGPT Content] Available elements:', {
+    chatContainer: !!document.querySelector('[class^="react-scroll-to-bottom--"]'),
+    inputArea: !!document.querySelector('#prompt-textarea'),
+    messages: !!document.querySelectorAll('article[data-testid^="conversation-turn-"]').length
+  });
+
+  // Set up immediate communication test
+  setTimeout(() => {
+    console.log('[LeanGPT Content] 3 second check - script should be active');
+  }, 3000);
 
   // Configuration
     let CONFIG = {
@@ -318,21 +329,27 @@
       }
 
       console.log('[LeanGPT Content] On ChatGPT page, proceeding with initialization...');
-      // Load settings first
+      
+      // Initialize immediately, load settings in background
+      LeanGPT.initWithSettings();
+      
+      // Load settings asynchronously
       if (!state.settingsLoaded) {
-        console.log('[LeanGPT Content] Settings not loaded, loading now...');
+        console.log('[LeanGPT Content] Loading settings in background...');
         loadSettings().then(() => {
-          LeanGPT.initWithSettings();
+          console.log('[LeanGPT Content] Settings loaded, reapplying if needed...');
         });
-      } else {
-        console.log('[LeanGPT Content] Settings already loaded, initializing with settings...');
-        LeanGPT.initWithSettings();
       }
     },
 
     initWithSettings: function() {
+      // Always initialize active state first for communication
+      state.isActive = true;
+      
+      console.log('[LeanGPT Content] initWithSettings called, active =', state.isActive);
+
       if (!CONFIG.ENABLED) {
-        Utils.log('Extension disabled, skipping initialization');
+        Utils.log('Extension disabled, but keeping communication active');
         return;
       }
 
@@ -353,10 +370,10 @@
           MessageOptimizer.trimMessages();
         }, 2000);
 
-        state.isActive = true;
         Utils.log('LeanGPT initialized successfully');
       }).catch(error => {
         Utils.log(`Initialization failed: ${error.message}`, 'error');
+        // Keep state active for debugging even if initialization fails
       });
     },
 
@@ -415,12 +432,19 @@
     },
 
     getStatus: function() {
-      return {
+      const status = {
         isActive: state.isActive,
         messageCount: state.messageCount,
         maxMessages: CONFIG.MAX_MESSAGES,
-        version: '0.1.0'
+        version: '0.1.0',
+        settingsLoaded: state.settingsLoaded,
+        enabled: CONFIG.ENABLED,
+        hostname: window.location.hostname,
+        url: window.location.href
       };
+      
+      console.log('[LeanGPT Content] getStatus called, returning:', status);
+      return status;
     }
   };
 
@@ -486,22 +510,20 @@
     return true; // Keep message channel open
   });
 
-  // Load settings on script load
-  console.log('[LeanGPT Content] Starting settings load...');
-  loadSettings().then(() => {
-    console.log('[LeanGPT Content] Settings loaded, proceeding with initialization...');
-    // Initialize when DOM is ready
-    if (document.readyState === 'loading') {
-      console.log('[LeanGPT Content] DOM still loading, adding DOMContentLoaded listener');
-      document.addEventListener('DOMContentLoaded', LeanGPT.init);
-    } else {
-      console.log('[LeanGPT Content] DOM already loaded, initializing immediately');
-      // DOM already loaded
-      LeanGPT.init();
-    }
-  }).catch(error => {
-    console.error('[LeanGPT Content] Failed to load settings:', error);
-  });
+  // Initialize immediately without waiting for settings
+  console.log('[LeanGPT Content] Script loaded on:', window.location.href);
+  console.log('[LeanGPT Content] Debug: hostname =', window.location.hostname);
+  console.log('[LeanGPT Content] Debug: isChatGPTPage() =', Utils.isChatGPTPage());
+  
+  // Initialize when DOM is ready
+  if (document.readyState === 'loading') {
+    console.log('[LeanGPT Content] DOM still loading, adding DOMContentLoaded listener');
+    document.addEventListener('DOMContentLoaded', LeanGPT.init);
+  } else {
+    console.log('[LeanGPT Content] DOM already loaded, initializing immediately');
+    // DOM already loaded
+    LeanGPT.init();
+  }
 
   // Cleanup on page unload
   window.addEventListener('beforeunload', LeanGPT.destroy);
