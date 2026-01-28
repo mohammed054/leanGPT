@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LeanGPT Test Page</title>
+    <style>
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #f7f7f8;
+            margin: 0;
+            padding: 20px;
+        }
+        .chat-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            height: 500px;
+            overflow-y: auto;
+            padding: 20px;
+        }
+        article {
+            margin: 15px 0;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #e1e5e9;
+        }
+        article[data-turn="user"] {
+            background: #f7f7f8;
+            margin-left: 20%;
+        }
+        article[data-turn="assistant"] {
+            background: #ffffff;
+            margin-right: 20%;
+        }
+        pre {
+            background: #f6f8fa;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+        code {
+            background: #f6f8fa;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-family: 'Monaco', 'Consolas', monospace;
+        }
+        .input-area {
+            max-width: 800px;
+            margin: 20px auto;
+        }
+        textarea {
+            width: 100%;
+            padding: 15px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 16px;
+            resize: vertical;
+        }
+        button {
+            background: #10a37f;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+        button:hover {
+            background: #0d8f70;
+        }
+        .status {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: #333;
+            color: white;
+            padding: 10px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+        .message-count {
+            font-weight: bold;
+            color: #10a37f;
+        }
+    </style>
+</head>
+<body>
+    <div class="status" id="status">
+        LeanGPT Status: <span id="extension-status">Unknown</span><br>
+        Messages: <span class="message-count" id="message-count">0</span>
+    </div>
+
+    <div class="chat-container react-scroll-to-bottom--abc123">
+        <h2>ChatGPT Performance Test</h2>
+        <p>This page simulates ChatGPT's DOM structure to test LeanGPT extension.</p>
+        
+        <!-- Test messages that should be trimmed -->
+        <article data-testid="conversation-turn-1" data-turn="user">
+            <strong>User:</strong> Can you help me understand recursion?
+        </article>
+        
+        <article data-testid="conversation-turn-2" data-turn="assistant">
+            <strong>Assistant:</strong> I'd be happy to explain recursion! Recursion is a programming concept where a function calls itself to solve a problem.
+        </article>
+        
+        <article data-testid="conversation-turn-3" data-turn="user">
+            <strong>User:</strong> Can you give me an example with code?
+        </article>
+        
+        <article data-testid="conversation-turn-4" data-turn="assistant">
+            <strong>Assistant:</strong> Sure! Here's a classic factorial example:
+            <pre><code>function factorial(n) {
+    if (n <= 1) return 1;
+    return n * factorial(n - 1);
+}</code></pre>
+        </article>
+        
+        <article data-testid="conversation-turn-5" data-turn="user">
+            <strong>User:</strong> What happens with factorial(5)?
+        </article>
+        
+        <article data-testid="conversation-turn-6" data-turn="assistant">
+            <strong>Assistant:</strong> factorial(5) would calculate: 5 × 4 × 3 × 2 × 1 = 120
+        </article>
+        
+        <article data-testid="conversation-turn-7" data-turn="user">
+            <strong>User:</strong> Is recursion always the best approach?
+        </article>
+        
+        <article data-testid="conversation-turn-8" data-turn="assistant">
+            <strong>Assistant:</strong> Not always! Recursion can be elegant but may have performance overhead. Sometimes iterative solutions are better.
+        </article>
+        
+        <article data-testid="conversation-turn-9" data-turn="user">
+            <strong>User:</strong> When should I use iteration instead?
+        </article>
+        
+        <article data-testid="conversation-turn-10" data-turn="assistant">
+            <strong>Assistant:</strong> Consider iteration when: dealing with large datasets, concerned about stack overflow, or optimizing for performance.
+        </article>
+        
+        <article data-testid="conversation-turn-11" data-turn="user">
+            <strong>User:</strong> Can you show the factorial function iteratively?
+        </article>
+        
+        <article data-testid="conversation-turn-12" data-turn="assistant">
+            <strong>Assistant:</strong> Here's the iterative version:
+            <pre><code>function factorialIterative(n) {
+    let result = 1;
+    for (let i = 2; i <= n; i++) {
+        result *= i;
+    }
+    return result;
+}</code></pre>
+        </article>
+        
+        <article data-testid="conversation-turn-13" data-turn="user">
+            <strong>User:</strong> Which one is faster?
+        </article>
+        
+        <article data-testid="conversation-turn-14" data-turn="assistant">
+            <strong>Assistant:</strong> The iterative version is generally faster due to function call overhead and stack operations.
+        </article>
+        
+        <article data-testid="conversation-turn-15" data-turn="user">
+            <strong>User:</strong> Thanks for the explanation!
+        </article>
+    </div>
+
+    <div class="input-area">
+        <textarea id="prompt-textarea" placeholder="Type your message here..."></textarea>
+        <button onclick="addMessage()">Send Message</button>
+    </div>
+
+    <script>
+        let messageCount = 15;
+        
+        function updateMessageCount() {
+            const messages = document.querySelectorAll('article[data-testid^="conversation-turn-"]');
+            document.getElementById('message-count').textContent = messages.length;
+        }
+        
+        function addMessage() {
+            const textarea = document.getElementById('prompt-textarea');
+            const container = document.querySelector('.chat-container');
+            
+            if (textarea.value.trim()) {
+                messageCount++;
+                
+                // Add user message
+                const userMsg = document.createElement('article');
+                userMsg.setAttribute('data-testid', `conversation-turn-${messageCount}`);
+                userMsg.setAttribute('data-turn', 'user');
+                userMsg.innerHTML = `<strong>User:</strong> ${textarea.value}`;
+                container.appendChild(userMsg);
+                
+                messageCount++;
+                
+                // Add assistant response after a delay
+                setTimeout(() => {
+                    const assistantMsg = document.createElement('article');
+                    assistantMsg.setAttribute('data-testid', `conversation-turn-${messageCount}`);
+                    assistantMsg.setAttribute('data-turn', 'assistant');
+                    assistantMsg.innerHTML = `<strong>Assistant:</strong> This is a simulated response to: "${textarea.value}"`;
+                    container.appendChild(assistantMsg);
+                    updateMessageCount();
+                }, 500);
+                
+                textarea.value = '';
+                updateMessageCount();
+            }
+        }
+        
+        // Check if LeanGPT is active
+        function checkLeanGPT() {
+            if (typeof window.LeanGPT !== 'undefined') {
+                document.getElementById('extension-status').textContent = 'Active ✅';
+                document.getElementById('extension-status').style.color = '#10a37f';
+            } else {
+                document.getElementById('extension-status').textContent = 'Not detected ❌';
+                document.getElementById('extension-status').style.color = '#ef4444';
+            }
+        }
+        
+        // Update counts and check extension
+        updateMessageCount();
+        setInterval(checkLeanGPT, 1000);
+        
+        // Listen for Enter key
+        document.getElementById('prompt-textarea').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                addMessage();
+            }
+        });
+    </script>
+</body>
+</html>

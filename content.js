@@ -41,6 +41,16 @@
       if (CONFIG.DEBUG) {
         console.log(`[LeanGPT ${level.toUpperCase()}]`, message);
       }
+      
+      // Send log to background script
+      try {
+        chrome.runtime.sendMessage({
+          action: 'log',
+          message: `[${level.toUpperCase()}] ${message}`
+        });
+      } catch (error) {
+        // Background script might not be available, that's okay
+      }
     },
 
     debounce: function(func, wait) {
@@ -376,6 +386,36 @@
       };
     }
   };
+
+  // Listen for messages from background script
+  chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    Utils.log('Message from background: ' + request.action);
+    
+    switch (request.action) {
+      case 'init':
+        LeanGPT.init();
+        sendResponse({ status: 'success' });
+        break;
+        
+      case 'toggle':
+        if (state.isActive) {
+          LeanGPT.destroy();
+        } else {
+          LeanGPT.init();
+        }
+        sendResponse({ status: 'success', active: state.isActive });
+        break;
+        
+      case 'getStatus':
+        sendResponse(LeanGPT.getStatus());
+        break;
+        
+      default:
+        sendResponse({ status: 'error', message: 'Unknown action' });
+    }
+    
+    return true; // Keep message channel open
+  });
 
   // Initialize when DOM is ready
   if (document.readyState === 'loading') {
