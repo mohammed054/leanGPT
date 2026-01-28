@@ -83,7 +83,19 @@
     },
 
     isChatGPTPage: function() {
-      return window.location.hostname === 'chat.openai.com';
+      const hostname = window.location.hostname;
+      const isChatGPT = hostname === 'chat.openai.com' || 
+                        hostname === 'openai.com' ||
+                        hostname.endsWith('.openai.com') ||
+                        hostname.endsWith('chatgpt.com');
+      
+      console.log('[LeanGPT Content] Page check:', {
+        hostname: hostname,
+        isChatGPT: isChatGPT,
+        href: window.location.href
+      });
+      
+      return isChatGPT;
     },
 
     isSafeMessage: function(element) {

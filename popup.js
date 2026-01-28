@@ -74,7 +74,11 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             // Check if we're on ChatGPT
-            currentStatus.onChatGPT = tab.url && tab.url.includes('chat.openai.com');
+            currentStatus.onChatGPT = tab.url && (
+                tab.url.includes('chat.openai.com') ||
+                tab.url.includes('openai.com') ||
+                tab.url.includes('chatgpt.com')
+            );
             
             if (currentStatus.onChatGPT) {
                 try {

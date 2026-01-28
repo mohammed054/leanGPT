@@ -10,7 +10,8 @@
   ],
   
   "host_permissions": [
-    "https://chat.openai.com/*"
+    "https://chat.openai.com/*",
+    "https://openai.com/*"
   ],
   
   "background": {
@@ -19,7 +20,7 @@
   
   "content_scripts": [
     {
-      "matches": ["https://chat.openai.com/*", "file://*/*test.html"],
+      "matches": ["https://chat.openai.com/*", "https://openai.com/*", "file://*/*test.html"],
       "js": ["content.js"],
       "css": ["content.css"],
       "run_at": "document_idle",
