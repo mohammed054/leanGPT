@@ -1,0 +1,316 @@
+/* LeanGPT - ChatGPT Performance Optimizer CSS */
+/* Optimizes ChatGPT performance by disabling animations and reducing rendering overhead */
+
+/* ============================================================================
+   ANIMATION & TRANSITION DISABLED (Core Performance Optimization)
+   ============================================================================ */
+
+.leangpt-no-animations *,
+.leangpt-no-animations *::before,
+.leangpt-no-animations *::after {
+  animation-duration: 0s !important;
+  animation-delay: 0s !important;
+  transition-duration: 0s !important;
+  transition-delay: 0s !important;
+  animation: none !important;
+  transition: none !important;
+  transform: none !important;
+}
+
+/* Alternative approach - disable all animations globally */
+* {
+  animation-duration: 0.01ms !important;
+  animation-delay: -0.01ms !important;
+  transition-duration: 0.01ms !important;
+  transition-delay: -0.01ms !important;
+  transform: none !important;
+}
+
+/* ============================================================================
+   SCROLL PERFORMANCE OPTIMIZATIONS
+   ============================================================================ */
+
+/* Optimize scroll container performance */
+[class^="react-scroll-to-bottom--"] {
+  scroll-behavior: auto !important;
+  overflow-anchor: none !important;
+  will-change: scroll-position !important;
+  contain: layout style paint !important;
+}
+
+/* Optimize scrolling by reducing paint complexity */
+[class^="react-scroll-to-bottom--"] * {
+  contain: layout style paint !important;
+}
+
+/* ============================================================================
+   SYNTAX HIGHLIGHTING REMOVAL
+   ============================================================================ */
+
+/* Remove syntax highlighting overhead from code blocks */
+pre code,
+.hljs,
+.hljs * {
+  background: transparent !important;
+  color: inherit !important;
+  text-shadow: none !important;
+  box-shadow: none !important;
+  border: none !important;
+}
+
+/* Remove syntax highlighting classes */
+pre,
+code,
+.hljs {
+  font-family: monospace !important;
+  background: transparent !important;
+  color: var(--text-primary) !important;
+  font-size: inherit !important;
+}
+
+/* ============================================================================
+   MESSAGE PERFORMANCE OPTIMIZATIONS
+   ============================================================================ */
+
+/* Optimize message containers for better rendering performance */
+article[data-testid^="conversation-turn-"] {
+  contain: layout style paint !important;
+  content-visibility: auto !important;
+  will-change: auto !important;
+}
+
+/* Reduce layout calculations for message content */
+article[data-testid^="conversation-turn-"] * {
+  contain: layout style paint !important;
+}
+
+/* Optimize text rendering */
+.whitespace-pre-wrap {
+  white-space: pre-wrap !important;
+  word-wrap: break-word !important;
+  text-rendering: optimizeSpeed !important;
+}
+
+/* ============================================================================
+   IMAGE AND MEDIA OPTIMIZATIONS
+   ============================================================================ */
+
+/* Lazy load images and reduce rendering overhead */
+img {
+  content-visibility: auto !important;
+  contain-intrinsic-size: 0 0 !important;
+  loading: lazy !important;
+}
+
+/* Optimize image rendering */
+img[src*="base64"] {
+  contain: strict !important;
+}
+
+/* ============================================================================
+   FONT AND TEXT RENDERING OPTIMIZATIONS
+   ============================================================================ */
+
+/* Disable font ligatures for better performance */
+* {
+  font-variant-ligatures: none !important;
+  font-feature-settings: normal !important;
+  text-rendering: optimizeSpeed !important;
+}
+
+/* Optimize text rendering for performance */
+body,
+html {
+  text-rendering: optimizeSpeed !important;
+  font-feature-settings: normal !important;
+  font-variant-ligatures: none !important;
+}
+
+/* ============================================================================
+   HOVER AND INTERACTION OPTIMIZATIONS
+   ============================================================================ */
+
+/* Remove hover effects to reduce repaints */
+:hover {
+  transform: none !important;
+  box-shadow: none !important;
+  background: inherit !important;
+}
+
+/* Disable pointer events on non-interactive elements during scroll */
+.scroll-active * {
+  pointer-events: none !important;
+}
+
+.scroll-active button,
+.scroll-active input,
+.scroll-active textarea,
+.scroll-active a {
+  pointer-events: auto !important;
+}
+
+/* ============================================================================
+   SHADOW AND BLUR EFFECTS REMOVAL
+   ============================================================================ */
+
+/* Remove expensive shadow and blur effects */
+* {
+  box-shadow: none !important;
+  text-shadow: none !important;
+  filter: none !important;
+  backdrop-filter: none !important;
+}
+
+/* ============================================================================
+   BORDER AND OUTLINE OPTIMIZATIONS
+   ============================================================================ */
+
+/* Simplify borders to reduce rendering complexity */
+* {
+  border-image: none !important;
+  outline: none !important;
+  outline-offset: 0 !important;
+}
+
+/* ============================================================================
+   GRADIENT AND COMPLEX BACKGROUND REMOVAL
+   ============================================================================ */
+
+/* Replace gradients with solid colors for better performance */
+* {
+  background-image: none !important;
+  background: var(--bg-solid, transparent) !important;
+}
+
+/* ============================================================================
+   CONTAINMENT OPTIMIZATIONS
+   ============================================================================ */
+
+/* Apply CSS containment for better performance */
+main,
+section,
+div[class*="conversation"],
+div[class*="chat"],
+article {
+  contain: layout style paint !important;
+}
+
+/* ============================================================================
+   REDUCE REFLOWS AND REPAINTS
+   ============================================================================ */
+
+/* Stabilize layout calculations */
+* {
+  min-width: 0 !important;
+  min-height: 0 !important;
+  max-width: none !important;
+  max-height: none !important;
+}
+
+/* Prevent layout thrashing */
+.flex,
+.grid {
+  contain: layout !important;
+}
+
+/* ============================================================================
+   MEMORY OPTIMIZATIONS
+   ============================================================================ */
+
+/* Reduce memory usage by simplifying styles */
+*::before,
+*::after {
+  content: none !important;
+  counter-increment: none !important;
+  counter-reset: none !important;
+}
+
+/* ============================================================================
+   SCROLLBAR OPTIMIZATIONS
+   ============================================================================ */
+
+/* Optimize scrollbar rendering */
+::-webkit-scrollbar {
+  width: 8px !important;
+  background: transparent !important;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2) !important;
+  border-radius: 4px !important;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.3) !important;
+}
+
+/* ============================================================================
+   FOCUS AND ACCESSIBILITY MAINTENANCE
+   ============================================================================ */
+
+/* Maintain accessibility while optimizing performance */
+:focus {
+  outline: 2px solid #007aff !important;
+  outline-offset: 2px !important;
+}
+
+/* Keep essential interactive elements functional */
+button:focus,
+input:focus,
+textarea:focus,
+a:focus {
+  outline: 2px solid #007aff !important;
+  outline-offset: 2px !important;
+}
+
+/* ============================================================================
+   DARK MODE COMPATIBILITY
+   ============================================================================ */
+
+/* Ensure optimizations work in both light and dark modes */
+@media (prefers-color-scheme: dark) {
+  * {
+    background-image: none !important;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2) !important;
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.3) !important;
+  }
+}
+
+/* ============================================================================
+   REDUCED MOTION SUPPORT
+   ============================================================================ */
+
+/* Respect user's motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ============================================================================
+   DEBUGGING MODE
+   ============================================================================ */
+
+/* Visual indicators for debugging (when enabled via JavaScript) */
+.leangpt-debug * {
+  outline: 1px solid rgba(255, 0, 0, 0.1) !important;
+}
+
+.leangpt-debug article[data-testid^="conversation-turn-"] {
+  outline: 2px solid rgba(0, 255, 0, 0.3) !important;
+}
+
+.leangpt-debug .leangpt-removed {
+  outline: 2px solid rgba(255, 0, 0, 0.5) !important;
+  opacity: 0.5 !important;
+}
