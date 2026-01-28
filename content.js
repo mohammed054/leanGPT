@@ -5,12 +5,13 @@
   'use strict';
 
   // Configuration
-  const CONFIG = {
+  let CONFIG = {
     MAX_MESSAGES: 10,           // Keep only last 10 messages
     TRIM_DELAY: 1000,           // Delay before trimming (ms)
     OBSERVER_DEBOUNCE: 500,     // MutationObserver debounce (ms)
     SCROLL_THROTTLE: 100,       // Scroll event throttle (ms)
-    DEBUG: false                // Enable debug logging
+    DEBUG: false,               // Enable debug logging
+    ENABLED: true               // Extension enabled/disabled
   };
 
   // CSS Selectors for ChatGPT elements
@@ -32,7 +33,8 @@
     scrollHandler: null,
     trimTimer: null,
     removedMessages: new WeakMap(),
-    lastScrollTime: 0
+    lastScrollTime: 0,
+    settingsLoaded: false
   };
 
   // Utility functions
@@ -299,6 +301,22 @@
         return;
       }
 
+      // Load settings first
+      if (!state.settingsLoaded) {
+        loadSettings().then(() => {
+          LeanGPT.initWithSettings();
+        });
+      } else {
+        LeanGPT.initWithSettings();
+      }
+    },
+
+    initWithSettings: function() {
+      if (!CONFIG.ENABLED) {
+        Utils.log('Extension disabled, skipping initialization');
+        return;
+      }
+
       // Wait for ChatGPT interface to be ready
       LeanGPT.waitForChatGPT().then(() => {
         Utils.log('ChatGPT interface ready, applying optimizations...');
@@ -387,6 +405,22 @@
     }
   };
 
+  // Load settings from storage
+  async function loadSettings() {
+    try {
+      const stored = await chrome.storage.sync.get(['enabled', 'maxMessages', 'debugMode']);
+      CONFIG.ENABLED = stored.enabled !== false; // Default to true
+      CONFIG.MAX_MESSAGES = stored.maxMessages || 10;
+      CONFIG.DEBUG = stored.debugMode || false;
+      state.settingsLoaded = true;
+      Utils.log('Settings loaded', { enabled: CONFIG.ENABLED, maxMessages: CONFIG.MAX_MESSAGES });
+    } catch (error) {
+      Utils.log('Error loading settings: ' + error.message, 'error');
+      // Use defaults
+      state.settingsLoaded = true;
+    }
+  }
+
   // Listen for messages from background script
   chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     Utils.log('Message from background: ' + request.action);
@@ -398,16 +432,31 @@
         break;
         
       case 'toggle':
-        if (state.isActive) {
-          LeanGPT.destroy();
-        } else {
+        CONFIG.ENABLED = !CONFIG.ENABLED;
+        if (CONFIG.ENABLED) {
           LeanGPT.init();
+        } else {
+          LeanGPT.destroy();
         }
+        // Save setting
+        chrome.storage.sync.set({ enabled: CONFIG.ENABLED });
         sendResponse({ status: 'success', active: state.isActive });
         break;
         
       case 'getStatus':
         sendResponse(LeanGPT.getStatus());
+        break;
+        
+      case 'updateSettings':
+        if (request.settings.maxMessages) {
+          CONFIG.MAX_MESSAGES = request.settings.maxMessages;
+          Utils.log('Updated maxMessages to: ' + CONFIG.MAX_MESSAGES);
+          // Re-trim if currently active
+          if (state.isActive) {
+            MessageOptimizer.scheduleTrim();
+          }
+        }
+        sendResponse({ status: 'success' });
         break;
         
       default:
@@ -417,13 +466,16 @@
     return true; // Keep message channel open
   });
 
-  // Initialize when DOM is ready
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', LeanGPT.init);
-  } else {
-    // DOM already loaded
-    LeanGPT.init();
-  }
+  // Load settings on script load
+  loadSettings().then(() => {
+    // Initialize when DOM is ready
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', LeanGPT.init);
+    } else {
+      // DOM already loaded
+      LeanGPT.init();
+    }
+  });
 
   // Cleanup on page unload
   window.addEventListener('beforeunload', LeanGPT.destroy);

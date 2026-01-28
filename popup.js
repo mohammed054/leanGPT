@@ -1,0 +1,228 @@
+// LeanGPT Popup Script
+// Handles user interface and interactions
+
+document.addEventListener('DOMContentLoaded', function() {
+    // DOM elements
+    const elements = {
+        statusIndicator: document.getElementById('statusIndicator'),
+        statusDot: document.getElementById('statusDot'),
+        statusText: document.getElementById('statusText'),
+        messageCount: document.getElementById('messageCount'),
+        performanceGain: document.getElementById('performanceGain'),
+        enableToggle: document.getElementById('enableToggle'),
+        maxMessagesSlider: document.getElementById('maxMessagesSlider'),
+        maxMessagesValue: document.getElementById('maxMessagesValue'),
+        openChatgpt: document.getElementById('openChatgpt'),
+        refreshPage: document.getElementById('refreshPage'),
+        siteStatus: document.getElementById('siteStatus')
+    };
+
+    // State
+    let currentSettings = {
+        enabled: true,
+        maxMessages: 10,
+        debugMode: false
+    };
+
+    let currentStatus = {
+        isActive: false,
+        messageCount: 0,
+        onChatGPT: false,
+        version: '0.1.0'
+    };
+
+    // Initialize popup
+    async function init() {
+        try {
+            await loadSettings();
+            await updateStatus();
+            setupEventListeners();
+            updateUI();
+            
+            // Auto-refresh status every 2 seconds
+            setInterval(updateStatus, 2000);
+        } catch (error) {
+            console.error('[LeanGPT Popup] Initialization error:', error);
+            showError('Failed to load popup');
+        }
+    }
+
+    // Load settings from storage
+    async function loadSettings() {
+        try {
+            const stored = await chrome.storage.sync.get(['enabled', 'maxMessages', 'debugMode']);
+            currentSettings = {
+                enabled: stored.enabled !== false, // Default to true
+                maxMessages: stored.maxMessages || 10,
+                debugMode: stored.debugMode || false
+            };
+        } catch (error) {
+            console.error('[LeanGPT Popup] Error loading settings:', error);
+        }
+    }
+
+    // Update current status from active tab and content script
+    async function updateStatus() {
+        try {
+            // Get current active tab
+            const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+            
+            if (!tab) {
+                currentStatus.onChatGPT = false;
+                updateUI();
+                return;
+            }
+
+            // Check if we're on ChatGPT
+            currentStatus.onChatGPT = tab.url && tab.url.includes('chat.openai.com');
+            
+            if (currentStatus.onChatGPT) {
+                try {
+                    // Try to get status from content script
+                    const response = await chrome.tabs.sendMessage(tab.id, { action: 'getStatus' });
+                    
+                    if (response && response.status === 'success') {
+                        currentStatus = {
+                            ...currentStatus,
+                            ...response.data
+                        };
+                    }
+                } catch (error) {
+                    // Content script might not be ready
+                    console.log('[LeanGPT Popup] Content script not responding:', error.message);
+                    currentStatus.isActive = false;
+                    currentStatus.messageCount = 0;
+                }
+            } else {
+                currentStatus.isActive = false;
+                currentStatus.messageCount = 0;
+            }
+
+            updateUI();
+        } catch (error) {
+            console.error('[LeanGPT Popup] Error updating status:', error);
+            updateUI();
+        }
+    }
+
+    // Update UI based on current state
+    function updateUI() {
+        // Status indicator
+        if (currentStatus.isActive && currentSettings.enabled) {
+            elements.statusIndicator.className = 'status-indicator status-active';
+            elements.statusText.textContent = 'Active';
+        } else if (!currentSettings.enabled) {
+            elements.statusIndicator.className = 'status-indicator status-inactive';
+            elements.statusText.textContent = 'Disabled';
+        } else {
+            elements.statusIndicator.className = 'status-indicator status-inactive';
+            elements.statusText.textContent = 'Inactive';
+        }
+
+        // Stats
+        elements.messageCount.textContent = currentStatus.messageCount || '-';
+        
+        // Calculate performance gain
+        if (currentStatus.messageCount > currentSettings.maxMessages) {
+            const removed = currentStatus.messageCount - currentSettings.maxMessages;
+            const gain = Math.round((removed / currentStatus.messageCount) * 100);
+            elements.performanceGain.textContent = `+${gain}%`;
+        } else {
+            elements.performanceGain.textContent = currentStatus.onChatGPT ? '0%' : '-';
+        }
+
+        // Enable toggle
+        elements.enableToggle.classList.toggle('active', currentSettings.enabled);
+
+        // Max messages slider
+        elements.maxMessagesSlider.value = currentSettings.maxMessages;
+        elements.maxMessagesValue.textContent = currentSettings.maxMessages;
+
+        // Site status
+        elements.siteStatus.textContent = currentStatus.onChatGPT ? 'On ChatGPT' : 'Not on ChatGPT';
+
+        // Button states
+        elements.refreshPage.disabled = !currentStatus.onChatGPT;
+    }
+
+    // Setup event listeners
+    function setupEventListeners() {
+        // Enable/disable toggle
+        elements.enableToggle.addEventListener('click', async function() {
+            currentSettings.enabled = !currentSettings.enabled;
+            await saveSettings();
+            
+            // Send toggle message to content script if on ChatGPT
+            if (currentStatus.onChatGPT) {
+                try {
+                    await chrome.tabs.sendMessage(
+                        chrome.tabs.query({ active: true, currentWindow: true }).then(tabs => tabs[0].id),
+                        { action: 'toggle' }
+                    );
+                } catch (error) {
+                    console.log('[LeanGPT Popup] Error toggling content script:', error);
+                }
+            }
+            
+            updateUI();
+        });
+
+        // Max messages slider
+        elements.maxMessagesSlider.addEventListener('input', function() {
+            const value = parseInt(this.value);
+            currentSettings.maxMessages = value;
+            elements.maxMessagesValue.textContent = value;
+        });
+
+        elements.maxMessagesSlider.addEventListener('change', async function() {
+            await saveSettings();
+            
+            // Send updated settings to content script
+            if (currentStatus.onChatGPT) {
+                try {
+                    await chrome.tabs.sendMessage(
+                        chrome.tabs.query({ active: true, currentWindow: true }).then(tabs => tabs[0].id),
+                        { 
+                            action: 'updateSettings',
+                            settings: { maxMessages: currentSettings.maxMessages }
+                        }
+                    );
+                } catch (error) {
+                    console.log('[LeanGPT Popup] Error updating settings:', error);
+                }
+            }
+        });
+
+        // Open ChatGPT button
+        elements.openChatgpt.addEventListener('click', function() {
+            chrome.tabs.create({ url: 'https://chat.openai.com' });
+            window.close(); // Close popup
+        });
+
+        // Refresh page button
+        elements.refreshPage.addEventListener('click', function() {
+            chrome.tabs.reload();
+            window.close(); // Close popup
+        });
+    }
+
+    // Save settings to storage
+    async function saveSettings() {
+        try {
+            await chrome.storage.sync.set(currentSettings);
+        } catch (error) {
+            console.error('[LeanGPT Popup] Error saving settings:', error);
+        }
+    }
+
+    // Show error state
+    function showError(message) {
+        elements.statusText.textContent = 'Error';
+        elements.statusIndicator.className = 'status-indicator status-inactive';
+        elements.messageCount.textContent = '-';
+        elements.performanceGain.textContent = '-';
+    }
+
+    // Initialize the popup
+    init();
+});
