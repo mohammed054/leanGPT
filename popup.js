@@ -1,12 +1,20 @@
 document.addEventListener('DOMContentLoaded', function() {
-    const statusEl = document.getElementById('status');
+        const statusEl = document.getElementById('status');
+        const tabInfoEl = document.getElementById('tabInfo');
+        const errorInfoEl = document.getElementById('errorInfo');
     
     async function updateStatus() {
         try {
             const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
             if (tabs && tabs.length > 0) {
                 const tab = tabs[0];
+                console.log('Current tab:', tab.url);
+                console.log('Is ChatGPT:', tab.url && (tab.url.includes('chat.openai.com') || tab.url.includes('openai.com')));
                 console.log('Testing communication with tab:', tab.id);
+                
+                // Update tab info
+                tabInfoEl.textContent = `Tab: ${tab.url.substring(0, 50)}...`;
+                errorInfoEl.textContent = 'No error yet';
                 
                 try {
                     const response = await chrome.tabs.sendMessage(tab.id, { action: 'getStatus' });
@@ -21,13 +29,20 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 } catch (error) {
                     console.error('Popup communication error:', error);
-                    statusEl.textContent = 'Communication Error ❌';
+                    statusEl.textContent = `Error: ${error.message} ❌`;
                     statusEl.className = 'status inactive';
+                    errorInfoEl.textContent = `Error: ${error.message}`;
                 }
-            }
+        } else {
+            console.log('No active tab found');
+            statusEl.textContent = 'No Tab Found ❌';
+            statusEl.className = 'status inactive';
+            tabInfoEl.textContent = 'No active tab';
+            errorInfoEl.textContent = 'No tab available';
+        }
         } catch (error) {
             console.error('Popup error:', error);
-            statusEl.textContent = 'Popup Error ❌';
+            statusEl.textContent = `Error: ${error.message} ❌`;
             statusEl.className = 'status inactive';
         }
     }
