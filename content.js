@@ -1,22 +1,41 @@
 // LeanGPT - ChatGPT Performance Optimizer
-// Optimizes ChatGPT performance on low-end laptops by safely managing DOM elements
+// MINIMAL DEBUG VERSION - Simplified to test injection
+
+console.log('[LEAN TEST] SCRIPT INJECTION STARTED');
+console.log('[LEAN TEST] URL:', window.location.href);
+console.log('[LEAN TEST] Hostname:', window.location.hostname);
 
 (function() {
   'use strict';
 
-  // Debug helper
-  console.log('[LeanGPT Content] Script loaded on:', window.location.href);
-  console.log('[LeanGPT Content] DOM ready state:', document.readyState);
-  console.log('[LeanGPT Content] Available elements:', {
-    chatContainer: !!document.querySelector('[class^="react-scroll-to-bottom--"]'),
-    inputArea: !!document.querySelector('#prompt-textarea'),
-    messages: !!document.querySelectorAll('article[data-testid^="conversation-turn-"]').length
+  console.log('[LEAN TEST] Inside IIFE');
+
+  // MINIMAL TEST - Just verify script is running
+  document.addEventListener('DOMContentLoaded', function() {
+    console.log('[LEAN TEST] DOM loaded');
+    
+    // Add visual indicator that script is working
+    const indicator = document.createElement('div');
+    indicator.id = 'leangpt-test-indicator';
+    indicator.style.cssText = `
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      background: #00d4ff;
+      color: white;
+      padding: 5px 10px;
+      border-radius: 5px;
+      font-size: 12px;
+      z-index: 999999;
+      font-family: monospace;
+    `;
+    indicator.textContent = 'LEAN TEST: LOADED';
+    document.body.appendChild(indicator);
+    
+    console.log('[LEAN TEST] Indicator added to page');
   });
 
-  // Set up immediate communication test
-  setTimeout(() => {
-    console.log('[LeanGPT Content] 3 second check - script should be active');
-  }, 3000);
+  console.log('[LEAN TEST] Event listener added');
 
   // Configuration
     let CONFIG = {

@@ -1,0 +1,55 @@
+{
+  "manifest_version": 3,
+  "name": "LeanGPT - DEBUG VERSION",
+  "version": "0.1.0-debug",
+  "description": "DEBUG: Minimal version to test script injection",
+  
+  "permissions": [
+    "activeTab",
+    "storage"
+  ],
+  
+  "host_permissions": [
+    "https://chat.openai.com/*",
+    "https://openai.com/*",
+    "https://*.openai.com/*"
+  ],
+  
+  "background": {
+    "service_worker": "background.js"
+  },
+  
+  "content_scripts": [
+    {
+      "matches": [
+        "https://chat.openai.com/*",
+        "https://openai.com/*",
+        "https://*.openai.com/*",
+        "http://*/*",
+        "https://*/*",
+        "file://*/*"
+      ],
+      "js": ["content.js"],
+      "css": ["content.css"],
+      "run_at": "document_start",
+      "all_frames": false
+    }
+  ],
+  
+  "icons": {
+    "128": "icons/icon.svg"
+  },
+  
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": "icons/icon.svg",
+    "default_title": "LeanGPT DEBUG"
+  },
+  
+  "web_accessible_resources": [
+    {
+      "resources": ["content.css"],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}
