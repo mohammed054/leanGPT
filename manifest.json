@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "LeanGPT - FINAL VERSION",
   "version": "0.1.0",
-  "description": "ChatGPT Performance Optimizer - Final Working Version",
+  "description": "ChatGPT Performance Optimizer - Optimization Levels Version",
   
   "permissions": ["activeTab", "storage"],
   

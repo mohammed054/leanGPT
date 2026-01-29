@@ -5,8 +5,8 @@
     <title>LeanGPT - ChatGPT Performance Optimizer</title>
     <style>
         body { 
-            width: 360px;
-            min-height: 480px;
+            width: 400px;
+            min-height: 580px;
             margin: 0;
             padding: 0;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
@@ -62,37 +62,55 @@
         .status-indicator {
             display: inline-flex;
             align-items: center;
-            gap: 8px;
-            padding: 8px 16px;
+            gap: 12px;
+            padding: 12px 16px;
             border-radius: 20px;
-            font-size: 14px;
+            font-size: 16px;
             font-weight: 500;
             margin-bottom: 16px;
+            position: relative;
+            overflow: hidden;
         }
         
         .status-active {
             background: rgba(16, 163, 127, 0.2);
             color: #10a37f;
-            border: 1px solid #10a37f;
+            border: 2px solid #10a37f;
+            box-shadow: 0 0 20px rgba(16, 163, 127, 0.2);
         }
         
         .status-inactive {
             background: rgba(239, 68, 68, 0.2);
             color: #ef4444;
-            border: 1px solid #ef4444;
+            border: 2px solid #ef4444;
+            box-shadow: 0 0 20px rgba(239, 68, 68, 0.2);
         }
         
         .status-dot {
-            width: 8px;
-            height: 8px;
+            width: 10px;
+            height: 10px;
             border-radius: 50%;
             background: currentColor;
             animation: pulse 2s infinite;
+            box-shadow: 0 0 10px currentColor;
         }
         
         @keyframes pulse {
             0%, 100% { opacity: 1; }
             50% { opacity: 0.5; }
+        }
+        
+        .level-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: rgba(0, 0, 0, 0.8);
+            color: #00d4ff;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 10px;
+            font-weight: bold;
+            font-family: monospace;
         }
         
         .stats {
@@ -104,14 +122,14 @@
         
         .stat-card {
             background: rgba(255, 255, 255, 0.05);
-            padding: 12px;
-            border-radius: 8px;
+            padding: 16px;
+            border-radius: 10px;
             border: 1px solid rgba(255, 255, 255, 0.1);
             text-align: center;
         }
         
         .stat-value {
-            font-size: 20px;
+            font-size: 24px;
             font-weight: 600;
             color: #00d4ff;
             display: block;
@@ -124,23 +142,36 @@
             letter-spacing: 0.5px;
         }
         
-        .performance-badge {
-            display: inline-block;
-            background: rgba(16, 163, 127, 0.2);
-            color: #10a37f;
-            padding: 4px 8px;
-            border-radius: 12px;
-            font-size: 10px;
-            font-weight: 500;
-            margin-left: 8px;
+        .performance-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 8px;
+            position: relative;
+        }
+        
+        .performance-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #10a37f 0%, #10a37f var(--fill-amount) 100%);
+            transition: width 0.3s ease-out;
         }
         
         .controls {
             padding: 0 20px 20px;
         }
         
-        .toggle-section {
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #00d4ff;
             margin-bottom: 16px;
+            text-align: center;
+        }
+        
+        .toggle-section {
+            margin-bottom: 20px;
         }
         
         .toggle-label {
@@ -148,15 +179,15 @@
             align-items: center;
             justify-content: space-between;
             font-size: 14px;
-            margin-bottom: 8px;
+            margin-bottom: 12px;
         }
         
         .toggle-switch {
             position: relative;
-            width: 44px;
-            height: 24px;
+            width: 50px;
+            height: 26px;
             background: #4a4a4a;
-            border-radius: 12px;
+            border-radius: 13px;
             cursor: pointer;
             transition: background 0.2s;
         }
@@ -167,8 +198,8 @@
         
         .toggle-slider {
             position: absolute;
-            top: 2px;
-            left: 2px;
+            top: 3px;
+            left: 3px;
             width: 20px;
             height: 20px;
             background: white;
@@ -177,11 +208,11 @@
         }
         
         .toggle-switch.active .toggle-slider {
-            transform: translateX(20px);
+            transform: translateX(24px);
         }
         
         .slider-section {
-            margin-bottom: 16px;
+            margin-bottom: 20px;
         }
         
         .slider-label {
@@ -189,47 +220,97 @@
             align-items: center;
             justify-content: space-between;
             font-size: 14px;
-            margin-bottom: 8px;
+            margin-bottom: 12px;
         }
         
         .slider-value {
             background: rgba(0, 212, 255, 0.2);
-            padding: 2px 8px;
+            padding: 6px 12px;
             border-radius: 12px;
-            font-size: 12px;
-            color: #00d4ff;
+            font-size: 14px;
             font-weight: 500;
+            color: #00d4ff;
+            min-width: 30px;
+            text-align: center;
         }
         
         input[type="range"] {
             width: 100%;
-            height: 6px;
+            height: 8px;
             background: #4a4a4a;
-            border-radius: 3px;
+            border-radius: 4px;
             outline: none;
             -webkit-appearance: none;
         }
         
         input[type="range"]::-webkit-slider-thumb {
             -webkit-appearance: none;
-            width: 16px;
-            height: 16px;
+            width: 18px;
+            height: 18px;
             background: #00d4ff;
             border-radius: 50%;
             cursor: pointer;
         }
         
+        .optimization-section {
+            margin-bottom: 20px;
+        }
+        
+        .optimization-levels {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+        
+        .level-btn {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+            color: white;
+        }
+        
+        .level-btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .level-btn.active {
+            background: linear-gradient(45deg, #00d4ff, #0066cc);
+            border: 2px solid #00d4ff;
+        }
+        
+        .level-btn.light {
+            background: linear-gradient(135deg, #28a745, #34d058);
+        }
+        
+        .level-btn.medium {
+            background: linear-gradient(135deg, #f59e0b, #ef4444);
+        }
+        
+        .level-btn.aggressive {
+            background: linear-gradient(135deg, #dc2626, #787161);
+        }
+        
+        .level-btn.ultra {
+            background: linear-gradient(135deg, #991b1b, #5f3d0f);
+        }
+        
         .button-group {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 8px;
+            gap: 10px;
         }
         
         .btn {
-            padding: 10px;
+            padding: 12px;
             border: none;
-            border-radius: 6px;
-            font-size: 13px;
+            border-radius: 8px;
+            font-size: 14px;
             font-weight: 500;
             cursor: pointer;
             transition: all 0.2s;
@@ -243,6 +324,7 @@
         
         .btn-primary:hover {
             background: linear-gradient(45deg, #00b8e6, #0052a3);
+            transform: translateY(-2px);
         }
         
         .btn-secondary {
@@ -252,11 +334,12 @@
         }
         
         .btn-secondary:hover {
-            background: rgba(255, 255, 255, 0.15);
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
         }
         
         .footer {
-            padding: 12px 20px;
+            padding: 16px 20px;
             background: rgba(0, 0, 0, 0.2);
             border-top: 1px solid rgba(255, 255, 255, 0.1);
             text-align: center;
@@ -267,19 +350,11 @@
             color: #666;
         }
         
-        .loading {
-            display: inline-block;
-            width: 12px;
-            height: 12px;
-            border: 2px solid #4a4a4a;
-            border-top: 2px solid #00d4ff;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        .performance-info {
+            font-size: 11px;
+            color: #aaa;
+            text-align: center;
+            margin-top: 8px;
         }
     </style>
 </head>
@@ -294,6 +369,7 @@
     
     <div class="status-section">
         <div class="status-indicator" id="statusIndicator">
+            <div class="level-badge" id="levelBadge">MED</div>
             <div class="status-dot" id="statusDot"></div>
             <span id="statusText">Loading...</span>
         </div>
@@ -306,7 +382,9 @@
             <div class="stat-card">
                 <span class="stat-value" id="performanceGain">-</span>
                 <span class="stat-label">Performance</span>
-                <span class="performance-badge" id="performanceBadge">+0%</span>
+                <div class="performance-bar">
+                    <div class="performance-fill" id="performanceFill"></div>
+                </div>
             </div>
         </div>
     </div>
@@ -329,6 +407,16 @@
             <input type="range" id="maxMessagesSlider" min="3" max="50" value="5" step="1">
         </div>
         
+        <div class="optimization-section">
+            <div class="section-title">Optimization Level</div>
+            <div class="optimization-levels">
+                <button class="level-btn light" id="lightBtn">Light</button>
+                <button class="level-btn medium active" id="mediumBtn">Medium</button>
+                <button class="level-btn aggressive" id="aggressiveBtn">Aggressive</button>
+                <button class="level-btn ultra" id="ultraBtn">Ultra</button>
+            </div>
+        </div>
+        
         <div class="button-group">
             <button class="btn btn-primary" id="openChatgpt">Open ChatGPT</button>
             <button class="btn btn-secondary" id="refreshPage">Refresh Page</button>
@@ -336,7 +424,8 @@
     </div>
     
     <div class="footer">
-        <p class="footer-text">Version 1.0.0 • <span id="siteStatus">Not on ChatGPT</span></p>
+        <p class="footer-text">Version 1.0.0-OPTIMIZED • <span id="siteStatus">Not on ChatGPT</span></p>
+        <p class="performance-info" id="performanceInfo">Select optimization level for best performance</p>
     </div>
     
     <script src="popup.js"></script>
