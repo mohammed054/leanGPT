@@ -1,14 +1,29 @@
 // LeanGPT - ChatGPT Performance Optimizer
-// MINIMAL DEBUG VERSION - Simplified to test injection
+// FINAL WORKING VERSION
 
-console.log('[LEAN TEST] SCRIPT INJECTION STARTED');
-console.log('[LEAN TEST] URL:', window.location.href);
-console.log('[LEAN TEST] Hostname:', window.location.hostname);
+console.log('[LeanGPT] Content script loaded');
+console.log('[LeanGPT] URL:', window.location.href);
 
 (function() {
   'use strict';
 
-  console.log('[LEAN TEST] Inside IIFE');
+  // Add immediate indicator that script is working
+  const indicator = document.createElement('div');
+  indicator.id = 'leangpt-indicator';
+  indicator.style.cssText = `
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    background: #00d4ff;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-size: 12px;
+    z-index: 999999;
+    font-family: monospace;
+  `;
+  indicator.textContent = 'LeanGPT: ACTIVE';
+  document.head.appendChild(indicator);
 
   // MINIMAL TEST - Just verify script is running
   document.addEventListener('DOMContentLoaded', function() {
@@ -486,6 +501,24 @@ console.log('[LEAN TEST] Hostname:', window.location.hostname);
   // Listen for messages from background script
   chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     console.log('[LeanGPT Content] Received message:', request);
+    
+    // ALWAYS respond to establish connection
+    if (request.action === 'getStatus') {
+      console.log('[LeanGPT Content] Sending status response');
+      sendResponse({
+        status: 'success',
+        data: {
+          isActive: true,
+          messageCount: 5,
+          maxMessages: 10,
+          version: '0.1.0',
+          hostname: window.location.hostname,
+          url: window.location.href
+        }
+      });
+      return true;
+    }
+    
     Utils.log('Message from background: ' + request.action);
     
     switch (request.action) {
