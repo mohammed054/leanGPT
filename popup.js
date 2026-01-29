@@ -204,7 +204,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Setup event listeners
+        // Setup event listeners
     function setupEventListeners() {
         // Enable/disable toggle
         elements.enableToggle.addEventListener('click', async function() {
@@ -225,6 +225,93 @@ document.addEventListener('DOMContentLoaded', function() {
             
             updateUI();
         });
+
+        // Max messages slider
+        elements.maxMessagesSlider.addEventListener('input', function() {
+            const value = parseInt(this.value);
+            currentSettings.maxMessages = value;
+            elements.maxMessagesValue.textContent = value;
+        });
+
+        elements.maxMessagesSlider.addEventListener('change', async function() {
+            await saveSettings();
+            
+            // Send updated settings to content script
+            if (currentStatus.onChatGPT) {
+                try {
+                    const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
+                    if (tabs && tabs.length > 0) {
+                        await chrome.tabs.sendMessage(tabs[0].id, { 
+                            action: 'updateSettings',
+                            settings: { maxMessages: currentSettings.maxMessages }
+                        });
+                    }
+                } catch (error) {
+                    console.log('[LeanGPT Popup] Error updating settings:', error);
+                }
+            }
+        });
+
+        // Open ChatGPT button
+        elements.openChatgpt.addEventListener('click', function() {
+            chrome.tabs.create({ url: 'https://chat.openai.com' });
+            window.close(); // Close popup
+        });
+
+        // Refresh page button
+        elements.refreshPage.addEventListener('click', function() {
+            chrome.tabs.reload();
+            window.close(); // Close popup
+        });
+    }
+
+        // Optimization level buttons
+        [lightBtn, mediumBtn, aggressiveBtn, ultraBtn].forEach(btn => {
+            btn.addEventListener('click', async function() {
+                const level = this.id.replace('Btn', '');
+                currentSettings.optimizationLevel = level;
+                setOptimizationLevel(level);
+                
+                console.log(`[LeanGPT] Optimization level changed to: ${level}`);
+                updateLevelButtons();
+                updatePerformanceInfo();
+            });
+        });
+
+        // Open ChatGPT button
+        elements.openChatgpt.addEventListener('click', function() {
+            chrome.tabs.create({ url: 'https://chat.openai.com' });
+            window.close(); // Close popup
+        });
+
+        // Refresh page button
+        elements.refreshPage.addEventListener('cutentListener('click', function() {
+            chrome.tabs.reload();
+            window.close(); // Close popup
+        });
+
+        // Save settings to storage
+        async function saveSettings() {
+            try {
+            await chrome.storage.sync.set(currentSettings);
+        } catch (error) {
+            console.error('[LeanGPT Popup] Error saving settings:', error);
+        }
+        }
+
+        // Show error state
+        function showError(message) {
+            elements.statusText.textContent = 'Error';
+            elements.statusIndicator.className = 'status-indicator status-inactive';
+            elements.messageCount.textContent = '-';
+            elements.performanceGain.textContent = '-';
+            elements.performanceBadge.style.display = 'none';
+        }
+    }
+
+    // Initialize popup
+    init();
+});
 
         // Max messages slider
         elements.maxMessagesSlider.addEventListener('input', function() {
