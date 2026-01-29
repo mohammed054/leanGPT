@@ -167,10 +167,10 @@ document.addEventListener('DOMContentLoaded', function() {
             // Send toggle message to content script if on ChatGPT
             if (currentStatus.onChatGPT) {
                 try {
-                    await chrome.tabs.sendMessage(
-                        chrome.tabs.query({ active: true, currentWindow: true }).then(tabs => tabs[0].id),
-                        { action: 'toggle' }
-                    );
+                    const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
+                    if (tabs && tabs.length > 0) {
+                        await chrome.tabs.sendMessage(tabs[0].id, { action: 'toggle' });
+                    }
                 } catch (error) {
                     console.log('[LeanGPT Popup] Error toggling content script:', error);
                 }
@@ -192,13 +192,13 @@ document.addEventListener('DOMContentLoaded', function() {
             // Send updated settings to content script
             if (currentStatus.onChatGPT) {
                 try {
-                    await chrome.tabs.sendMessage(
-                        chrome.tabs.query({ active: true, currentWindow: true }).then(tabs => tabs[0].id),
-                        { 
+                    const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
+                    if (tabs && tabs.length > 0) {
+                        await chrome.tabs.sendMessage(tabs[0].id, { 
                             action: 'updateSettings',
                             settings: { maxMessages: currentSettings.maxMessages }
-                        }
-                    );
+                        });
+                    }
                 } catch (error) {
                     console.log('[LeanGPT Popup] Error updating settings:', error);
                 }
