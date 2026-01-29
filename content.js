@@ -1,25 +1,44 @@
-console.log('[LeanGPT] SCRIPT LOADED - TEST VERSION');
+console.log('[LeanGPT] Content script loading for ChatGPT...');
 
-// Add obvious visual indicator
-const testDiv = document.createElement('div');
-testDiv.innerHTML = '🔴 SCRIPT INJECTED';
-testDiv.style.cssText = `
+// Add visual indicator
+const indicator = document.createElement('div');
+indicator.style.cssText = `
   position: fixed;
-  top: 0;
-  left: 0;
-  background: red;
+  top: 10px;
+  right: 10px;
+  background: #00d4ff;
   color: white;
-  padding: 20px;
-  z-index: 999999;
-  font-size: 24px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 12px;
   font-weight: bold;
+  z-index: 999999;
+  font-family: Arial, sans-serif;
 `;
-document.body.appendChild(testDiv);
+indicator.textContent = '🚀 LeanGPT ACTIVE';
+document.body.appendChild(indicator);
 
-// Always respond to messages
+// Message listener
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   console.log('[LeanGPT] Got message:', request);
-  sendResponse({ status: 'success', data: { active: true } });
+  
+  if (request.action === 'getStatus') {
+    sendResponse({
+      status: 'success',
+      data: {
+        isActive: true,
+        messageCount: 5,
+        maxMessages: 10,
+        version: '0.1.0'
+      }
+    });
+  }
+  
+  if (request.action === 'toggle') {
+    sendResponse({ status: 'success', toggled: true });
+  }
+  
+  return true;
 });
 
-console.log('[LeanGPT] SCRIPT FULLY ACTIVE');
+console.log('[LeanGPT] Content script fully ready');

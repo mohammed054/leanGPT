@@ -1,20 +1,26 @@
 {
   "manifest_version": 3,
-  "name": "LeanGPT - FORCED TEST",
+  "name": "LeanGPT - FINAL VERSION",
   "version": "0.1.0",
-  "description": "Forced test version",
+  "description": "ChatGPT Performance Optimizer - Final Working Version",
   
-  "permissions": ["activeTab"],
+  "permissions": ["activeTab", "storage"],
   
   "content_scripts": [
     {
-      "matches": ["<all_urls>"],
+      "matches": ["https://chat.openai.com/*", "https://openai.com/*"],
       "js": ["content.js"],
       "run_at": "document_idle"
     }
   ],
   
   "action": {
-    "default_title": "LeanGPT Test"
+    "default_popup": "popup.html",
+    "default_icon": "icons/icon.svg",
+    "default_title": "LeanGPT - ChatGPT Optimizer"
+  },
+  
+  "icons": {
+    "128": "icons/icon.svg"
   }
 }
