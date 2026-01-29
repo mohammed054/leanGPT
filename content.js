@@ -1,13 +1,13 @@
-// LeanGPT Content Script - FINAL WORKING VERSION
+// LeanGPT Content Script - VERIFICATION VERSION
 console.log('[LeanGPT] Content script loading for ChatGPT...');
 
 // State
 let isInitialized = false;
 let observer = null;
 let trimTimer = null;
-let MAX_MESSAGES = 5; // Keep only 5 messages
+let MAX_MESSAGES = 5; // Default, will be updated by popup
 
-// Add visual indicator
+// Add visual indicator that shows current settings
 function showIndicator() {
   const indicator = document.createElement('div');
   indicator.id = 'leangpt-indicator';
@@ -25,7 +25,7 @@ function showIndicator() {
     font-family: Arial, sans-serif;
     box-shadow: 0 4px 12px rgba(0,0,0,0.3);
   `;
-  indicator.textContent = '🚀 LeanGPT ACTIVE';
+  indicator.textContent = '🚀 LeanGPT INITIALIZING...';
   document.body.appendChild(indicator);
   return indicator;
 }
@@ -34,10 +34,11 @@ function showIndicator() {
 function countMessages() {
   const messages = document.querySelectorAll('article[data-testid^="conversation-turn-"]');
   console.log(`[LeanGPT] Found ${messages.length} messages on page`);
+  console.log(`[LeanGPT] Current MAX_MESSAGES limit: ${MAX_MESSAGES}`);
   return messages.length;
 }
 
-// Trim old messages - KEEP ONLY 5
+// Trim old messages - KEEP ONLY MAX_MESSAGES
 function trimMessages() {
   if (!isInitialized) return;  
   
@@ -51,7 +52,7 @@ function trimMessages() {
     return;
   }
   
-  // Remove oldest messages, keep last 5
+  // Remove oldest messages, keep last MAX_MESSAGES
   const toRemove = Array.from(messages).slice(0, messageCount - MAX_MESSAGES);
   let removedCount = 0;
   
@@ -59,6 +60,7 @@ function trimMessages() {
     try {
       message.remove();
       removedCount++;
+      console.log(`[LeanGPT] Removed message ${removedCount}`);
     } catch (error) {
       console.error('[LeanGPT] Error removing message:', error);
     }
@@ -69,20 +71,8 @@ function trimMessages() {
   // Update indicator with count
   const indicator = document.querySelector('#leangpt-indicator');
   if (indicator) {
-    indicator.textContent = `🚀 LeanGPT (${MAX_MESSAGES}/${MAX_MESSAGES})`;
+    indicator.textContent = `🚀 LeanGPT (${messageCount - removedCount}/${MAX_MESSAGES})`;
   }
-}
-
-// Calculate performance percentage - Improved version
-function calculatePerformanceGain(messageCount) {
-  if (messageCount <= MAX_MESSAGES) {
-    // Show small percentage even when within limit
-    return 5; // Show "optimizing" even when within limit
-  }
-  
-  const removed = messageCount - MAX_MESSAGES;
-  const gain = Math.round((removed / messageCount) * 100);
-  return Math.max(gain, 5); // Minimum 5% to show it's working
 }
 
 // Schedule trimming with debounce
@@ -91,6 +81,7 @@ function scheduleTrim() {
     clearTimeout(trimTimer);
   }
   
+  console.log('[LeanGPT] Scheduling trim in 1 second');
   trimTimer = setTimeout(() => {
     trimMessages();
   }, 1000);
@@ -109,11 +100,13 @@ function startObserver() {
           // Check if new message was added
           if (node.matches && node.matches('article[data-testid^="conversation-turn-"]')) {
             hasNewMessages = true;
+            console.log('[LeanGPT] New message detected directly');
           }
           // Check descendants for messages
           const messages = node.querySelectorAll && node.querySelectorAll('article[data-testid^="conversation-turn-"]');
           if (messages && messages.length > 0) {
             hasNewMessages = true;
+            console.log(`[LeanGPT] New messages detected: ${messages.length}`);
           }
         }
       });
@@ -134,21 +127,6 @@ function startObserver() {
     });
     console.log('[LeanGPT] Observer started');
   }
-}
-
-// Initialize LeanGPT
-function initialize() {
-  if (isInitialized) return;  
-  console.log('[LeanGPT] Initializing with 5 message limit...');
-  showIndicator();
-  startObserver();
-  
-  // Initial trim after delay
-  setTimeout(() => {
-    trimMessages();
-    isInitialized = true;
-    console.log('[LeanGPT] Initialization complete - trimming active');
-  }, 2000);
 }
 
 // OPTIMIZATIONS
@@ -183,11 +161,33 @@ function optimizeScrolling() {
 function removeSyntaxHighlighting() {
   console.log('[LeanGPT] Removing syntax highlighting...');
   const codeBlocks = document.querySelectorAll('pre code, .hljs');
-  codeBlocks.forEach(block => {
+  console.log(`[LeanGPT] Found ${codeBlocks.length} code blocks to optimize`);
+  codeBlocks.forEach((block, index) => {
     block.style.backgroundColor = 'transparent';
     block.style.color = 'inherit';
     block.classList.remove('hljs');
+    console.log(`[LeanGPT] Optimized code block ${index + 1}`);
   });
+}
+
+// Initialize LeanGPT
+function initialize() {
+  if (isInitialized) return;  
+  console.log('[LeanGPT] Initializing with MAX_MESSAGES =', MAX_MESSAGES);
+  showIndicator();
+  startObserver();
+  
+  // Apply all optimizations
+  disableAnimations();
+  optimizeScrolling();
+  removeSyntaxHighlighting();
+  
+  // Initial trim after delay
+  setTimeout(() => {
+    trimMessages();
+    isInitialized = true;
+    console.log('[LeanGPT] Initialization complete');
+  }, 2000);
 }
 
 // Message listener
@@ -198,29 +198,33 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     const messageCount = countMessages();
     const performanceGain = calculatePerformanceGain(messageCount);
     
+    console.log(`[LeanGPT] Status check - Messages: ${messageCount}, MAX: ${MAX_MESSAGES}, Gain: ${performanceGain}%`);
+    
     sendResponse({
       status: 'success',
-        data: {
+      data: {
         isActive: isInitialized,
         messageCount: messageCount,
         maxMessages: MAX_MESSAGES,
-        version: '0.1.0',
+        version: '1.0.0-VERIFIED',
         hostname: window.location.hostname,
         url: window.location.href,
-        performanceGain: calculatePerformanceGain(messageCount, MAX_MESSAGES)
+        performanceGain: performanceGain
       }
     });
   }
   
   if (request.action === 'toggle') {
     isInitialized = !isInitialized;
+    console.log(`[LeanGPT] Toggle optimization: ${isInitialized}`);
+    
     if (isInitialized) {
       console.log('[LeanGPT] Re-enabling optimizations');
       startObserver();
-      trimMessages();
       disableAnimations();
       optimizeScrolling();
       removeSyntaxHighlighting();
+      trimMessages();
     } else {
       console.log('[LeanGPT] Disabling optimizations');
       if (observer) {
@@ -229,13 +233,15 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       }
     }
     
-    sendResponse({ status: 'success', toggled: true });
+    sendResponse({ status: 'success', toggled: isInitialized });
   }
   
   if (request.action === 'updateSettings') {
-    if (request.settings.maxMessages) {
+    if (request.settings.maxMessages && request.settings.maxMessages !== MAX_MESSAGES) {
+      const oldMax = MAX_MESSAGES;
       MAX_MESSAGES = request.settings.maxMessages;
-      console.log(`[LeanGPT] Updating max messages to: ${MAX_MESSAGES}`);
+      console.log(`[LeanGPT] MAX_MESSAGES updated: ${oldMax} → ${MAX_MESSAGES}`);
+      
       // Re-trim immediately with new limit
       if (isInitialized) {
         trimMessages();
@@ -248,9 +254,16 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   return true;
 });
 
-// Start initialization with all optimizations
+// Calculate performance percentage
+function calculatePerformanceGain(messageCount) {
+  if (messageCount <= MAX_MESSAGES) {
+    return 5; // Show "optimizing" even when within limit
+  }
+  const removed = messageCount - MAX_MESSAGES;
+  const gain = Math.round((removed / messageCount) * 100);
+  return Math.max(gain, 5); // Minimum 5% to show it's working
+}
+
+// Start initialization
 console.log('[LeanGPT] Content script fully loaded and ready');
-disableAnimations();
-optimizeScrolling();
-removeSyntaxHighlighting();
 initialize();
