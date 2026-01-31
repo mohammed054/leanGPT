@@ -41,7 +41,7 @@ const OPTIMIZATION_LEVELS = {
 };
 
 // Current optimization settings
-let currentLevel = OPTIMIZATION_LEVELS.medium;
+let currentLevel = 'medium';
 
 // Add visual indicator with level info
 function showIndicator() {
@@ -96,7 +96,9 @@ function trimMessages() {
   // Calculate how many to remove
   let toRemoveCount;
   if (settings.aggressiveMode) {
-    toRemoveCount = Math.max(1, messageCount - Math.ceil(MAX_MESSAGES * 0.2)); // Ultra aggressive
+    // In aggressive mode, keep only 80% of MAX_MESSAGES (more aggressive trimming)
+    const targetKeep = Math.ceil(MAX_MESSAGES * 0.8);
+    toRemoveCount = Math.max(1, messageCount - targetKeep);
   } else {
     toRemoveCount = messageCount - MAX_MESSAGES;
   }

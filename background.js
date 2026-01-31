@@ -8,16 +8,17 @@ chrome.runtime.onInstalled.addListener((details) => {
   // Initialize default settings
   chrome.storage.sync.set({
     enabled: true,
-    maxMessages: 10,
+    maxMessages: 5, // Match popup.js default
     debugMode: false,
+    optimizationLevel: 'medium',
     version: '0.1.0'
   });
 });
 
 // Handle extension icon click
 chrome.action.onClicked.addListener((tab) => {
-  // Only activate on ChatGPT
-  if (tab.url && tab.url.includes('chat.openai.com')) {
+  // Only activate on ChatGPT domains
+  if (tab.url && (tab.url.includes('chat.openai.com') || tab.url.includes('openai.com') || tab.url.includes('chatgpt.com'))) {
     // Send message to content script
     chrome.tabs.sendMessage(tab.id, { action: 'toggle' })
       .catch(error => {
@@ -35,7 +36,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   
   switch (request.action) {
     case 'getStatus':
-      chrome.storage.sync.get(['enabled', 'maxMessages', 'debugMode'], (result) => {
+      chrome.storage.sync.get(['enabled', 'maxMessages', 'debugMode', 'optimizationLevel'], (result) => {
         sendResponse({
           status: 'success',
           data: result
@@ -62,8 +63,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
 // Handle tab updates for ChatGPT
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
-  // Only process ChatGPT tabs
-  if (tab.url && tab.url.includes('chat.openai.com')) {
+  // Only process ChatGPT domains
+  if (tab.url && (tab.url.includes('chat.openai.com') || tab.url.includes('openai.com') || tab.url.includes('chatgpt.com'))) {
     // When page is fully loaded, ensure content script is active
     if (changeInfo.status === 'complete') {
       console.log('[LeanGPT Background] ChatGPT page loaded, ensuring content script is active');

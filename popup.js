@@ -1,4 +1,4 @@
-// LeanGPT Popup Script - OPTIMIZATION LEVELS - FIXED VERSION
+// LeanGPT Popup Script - OPTIMIZATION LEVELS - CLEAN VERSION
 
 document.addEventListener('DOMContentLoaded', function() {
     // DOM elements
@@ -32,7 +32,7 @@ document.addEventListener('DOMContentLoaded', function() {
         enabled: true,
         maxMessages: 5,
         debugMode: false,
-        optimizationLevel: 'medium' // Start with medium level
+        optimizationLevel: 'medium'
     };
 
     let currentStatus = {
@@ -65,7 +65,7 @@ document.addEventListener('DOMContentLoaded', function() {
         try {
             const stored = await chrome.storage.sync.get(['enabled', 'maxMessages', 'debugMode', 'optimizationLevel']);
             currentSettings = {
-                enabled: stored.enabled !== false, // Default to true
+                enabled: stored.enabled !== false,
                 maxMessages: stored.maxMessages || 5,
                 debugMode: stored.debugMode || false,
                 optimizationLevel: stored.optimizationLevel || 'medium'
@@ -75,10 +75,18 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    // Save settings to storage
+    async function saveSettings() {
+        try {
+            await chrome.storage.sync.set(currentSettings);
+        } catch (error) {
+            console.error('[LeanGPT Popup] Error saving settings:', error);
+        }
+    }
+
     // Update current status from active tab and content script
     async function updateStatus() {
         try {
-            // Get current active tab
             const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
             
             if (!tab) {
@@ -97,7 +105,6 @@ document.addEventListener('DOMContentLoaded', function() {
             if (currentStatus.onChatGPT) {
                 try {
                     console.log('[LeanGPT Popup] Attempting to communicate with content script...');
-                    // Try to get status from content script
                     const response = await chrome.tabs.sendMessage(tab.id, { action: 'getStatus' });
                     
                     console.log('[LeanGPT Popup] Content script response:', response);
@@ -113,7 +120,6 @@ document.addEventListener('DOMContentLoaded', function() {
                         currentStatus.messageCount = 0;
                     }
                 } catch (error) {
-                    // Content script might not be ready
                     console.error('[LeanGPT Popup] Content script not responding:', error);
                     currentStatus.isActive = false;
                     currentStatus.messageCount = 0;
@@ -121,11 +127,6 @@ document.addEventListener('DOMContentLoaded', function() {
             } else {
                 currentStatus.isActive = false;
                 currentStatus.messageCount = 0;
-            }
-
-            // Show "working" status when on ChatGPT but performance is 0
-            if (currentStatus.onChatGPT && !currentStatus.performanceGain) {
-                currentStatus.performanceGain = 10; // Show "optimizing" status
             }
 
             updateUI();
@@ -201,10 +202,9 @@ document.addEventListener('DOMContentLoaded', function() {
         } else {
             elements.performanceInfo.textContent = 'Custom level';
         }
-        }
     }
 
-        // Setup event listeners
+    // Setup event listeners
     function setupEventListeners() {
         // Enable/disable toggle
         elements.enableToggle.addEventListener('click', async function() {
@@ -252,104 +252,30 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
 
-        // Open ChatGPT button
-        elements.openChatgpt.addEventListener('click', function() {
-            chrome.tabs.create({ url: 'https://chat.openai.com' });
-            window.close(); // Close popup
-        });
-
-        // Refresh page button
-        elements.refreshPage.addEventListener('click', function() {
-            chrome.tabs.reload();
-            window.close(); // Close popup
-        });
-    }
-
         // Optimization level buttons
-        [lightBtn, mediumBtn, aggressiveBtn, ultraBtn].forEach(btn => {
+        [elements.lightBtn, elements.mediumBtn, elements.aggressiveBtn, elements.ultraBtn].forEach(btn => {
             btn.addEventListener('click', async function() {
                 const level = this.id.replace('Btn', '');
                 currentSettings.optimizationLevel = level;
-                setOptimizationLevel(level);
+                await saveSettings();
                 
-                console.log(`[LeanGPT] Optimization level changed to: ${level}`);
-                updateLevelButtons();
-                updatePerformanceInfo();
-            });
-        });
-
-        // Open ChatGPT button
-        elements.openChatgpt.addEventListener('click', function() {
-            chrome.tabs.create({ url: 'https://chat.openai.com' });
-            window.close(); // Close popup
-        });
-
-        // Refresh page button
-        elements.refreshPage.addEventListener('cutentListener('click', function() {
-            chrome.tabs.reload();
-            window.close(); // Close popup
-        });
-
-        // Save settings to storage
-        async function saveSettings() {
-            try {
-            await chrome.storage.sync.set(currentSettings);
-        } catch (error) {
-            console.error('[LeanGPT Popup] Error saving settings:', error);
-        }
-        }
-
-        // Show error state
-        function showError(message) {
-            elements.statusText.textContent = 'Error';
-            elements.statusIndicator.className = 'status-indicator status-inactive';
-            elements.messageCount.textContent = '-';
-            elements.performanceGain.textContent = '-';
-            elements.performanceBadge.style.display = 'none';
-        }
-    }
-
-    // Initialize popup
-    init();
-});
-
-        // Max messages slider
-        elements.maxMessagesSlider.addEventListener('input', function() {
-            const value = parseInt(this.value);
-            currentSettings.maxMessages = value;
-            elements.maxMessagesValue.textContent = value;
-        });
-
-        elements.maxMessagesSlider.addEventListener('change', async function() {
-            await saveSettings();
-            
-            // Send updated settings to content script
-            if (currentStatus.onChatGPT) {
-                try {
-                    const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
-                    if (tabs && tabs.length > 0) {
-                        await chrome.tabs.sendMessage(tabs[0].id, { 
-                            action: 'updateSettings',
-                            settings: { maxMessages: currentSettings.maxMessages }
-                        });
+                // Send optimization level to content script
+                if (currentStatus.onChatGPT) {
+                    try {
+                        const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
+                        if (tabs && tabs.length > 0) {
+                            await chrome.tabs.sendMessage(tabs[0].id, { 
+                                action: 'setOptimizationLevel',
+                                level: level
+                            });
+                        }
+                    } catch (error) {
+                        console.log('[LeanGPT Popup] Error setting optimization level:', error);
                     }
-                } catch (error) {
-                    console.log('[LeanGPT Popup] Error updating settings:', error);
                 }
-            }
-        });
-
-        // Optimization level buttons
-        [lightBtn, mediumBtn, aggressiveBtn, ultraBtn].forEach(btn => {
-            btn.addEventListener('click', async function() {
-                const level = this.id.replace('Btn', '');
-                currentSettings.optimizationLevel = level;
-                setOptimizationLevel(level);
                 
                 console.log(`[LeanGPT] Optimization level changed to: ${level}`);
-                updateLevelBadge();
-                updatePerformanceInfo();
-            updateUI();
+                updateUI();
             });
         });
 
@@ -364,15 +290,6 @@ document.addEventListener('DOMContentLoaded', function() {
             chrome.tabs.reload();
             window.close();
         });
-    }
-
-    // Save settings to storage
-    async function saveSettings() {
-        try {
-            await chrome.storage.sync.set(currentSettings);
-        } catch (error) {
-            console.error('[LeanGPT Popup] Error saving settings:', error);
-        }
     }
 
     // Show error state
