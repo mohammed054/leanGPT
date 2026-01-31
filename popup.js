@@ -133,12 +133,25 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 } catch (error) {
                     console.error('[LeanGPT Popup] Content script not responding:', error);
-                    currentStatus.isActive = false;
-                    currentStatus.messageCount = 0;
+                    // Ensure currentStatus has default values
+                    currentStatus = {
+                        ...currentStatus,
+                        isActive: false,
+                        messageCount: 0,
+                        onChatGPT: currentStatus.onChatGPT || false,
+                        performanceGain: 0,
+                        optimizationLevel: currentSettings.optimizationLevel || 'medium'
+                    };
                 }
             } else {
-                currentStatus.isActive = false;
-                currentStatus.messageCount = 0;
+                currentStatus = {
+                    ...currentStatus,
+                    isActive: false,
+                    messageCount: 0,
+                    onChatGPT: false,
+                    performanceGain: 0,
+                    optimizationLevel: currentSettings.optimizationLevel || 'medium'
+                };
             }
 
             updateUI();
@@ -202,6 +215,9 @@ document.addEventListener('DOMContentLoaded', function() {
         // Update level badge and info
         updateLevelBadge();
         updatePerformanceInfo();
+        
+        // Update button states
+        updateButtonStates(currentSettings.optimizationLevel);
     }
 
     // Update level badge
@@ -305,6 +321,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
                 
                 console.log(`[LeanGPT] Optimization level changed to: ${level}`);
+                
+                // Update button visual states
+                updateButtonStates(level);
                 updateUI();
             });
         });
@@ -319,6 +338,18 @@ document.addEventListener('DOMContentLoaded', function() {
         elements.refreshPage.addEventListener('click', function() {
             chrome.tabs.reload();
             window.close();
+        });
+    }
+
+    // Update button visual states
+    function updateButtonStates(activeLevel) {
+        [elements.lightBtn, elements.mediumBtn, elements.aggressiveBtn, elements.ultraBtn].forEach(btn => {
+            if (btn) {
+                btn.classList.remove('active');
+                if (btn.id === `${activeLevel}Btn`) {
+                    btn.classList.add('active');
+                }
+            }
         });
     }
 
