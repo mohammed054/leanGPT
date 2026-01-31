@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', function() {
         messageCount: document.getElementById('messageCount'),
         performanceGain: document.getElementById('performanceGain'),
         performanceFill: document.getElementById('performanceFill'),
-        performanceBadge: document.getElementById('levelBadge'),
+        levelBadge: document.getElementById('levelBadge'),
         enableToggle: document.getElementById('enableToggle'),
         maxMessagesSlider: document.getElementById('maxMessagesSlider'),
         maxMessagesValue: document.getElementById('maxMessagesValue'),
@@ -171,12 +171,12 @@ document.addEventListener('DOMContentLoaded', function() {
         if (elements.messageCount) elements.messageCount.textContent = currentStatus.messageCount || '-';
         if (elements.performanceGain) elements.performanceGain.textContent = currentStatus.performanceGain + '%';
         
-        // Show/hide performance badge
-        if (elements.performanceBadge) {
+        // Show/hide level badge based on performance
+        if (elements.levelBadge) {
             if (currentStatus.performanceGain > 0) {
-                elements.performanceBadge.style.display = 'inline-block';
+                elements.levelBadge.style.display = 'block';
             } else {
-                elements.performanceBadge.style.display = 'none';
+                elements.levelBadge.style.display = 'none';
             }
         }
 
@@ -329,7 +329,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (elements.statusIndicator) elements.statusIndicator.className = 'status-indicator status-inactive';
         if (elements.messageCount) elements.messageCount.textContent = '-';
         if (elements.performanceGain) elements.performanceGain.textContent = '-';
-        if (elements.performanceBadge) elements.performanceBadge.style.display = 'none';
+        if (elements.levelBadge) elements.levelBadge.style.display = 'none';
     }
 
     // Initialize popup
