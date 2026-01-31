@@ -47,6 +47,18 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize popup
     async function init() {
         try {
+            // Check if all required elements exist
+            const missingElements = [];
+            Object.keys(elements).forEach(key => {
+                if (!elements[key]) {
+                    missingElements.push(key);
+                }
+            });
+            
+            if (missingElements.length > 0) {
+                console.warn('[LeanGPT Popup] Missing elements:', missingElements);
+            }
+            
             await loadSettings();
             await updateStatus();
             setupEventListeners();
@@ -139,43 +151,53 @@ document.addEventListener('DOMContentLoaded', function() {
     // Update UI based on current state
     function updateUI() {
         // Status indicator
-        if (currentStatus.isActive && currentSettings.enabled) {
-            elements.statusIndicator.className = 'status-indicator status-active';
-            elements.statusText.textContent = 'Active';
-            elements.statusDot.style.backgroundColor = '#10a37f';
-        } else if (!currentSettings.enabled) {
-            elements.statusIndicator.className = 'status-indicator status-inactive';
-            elements.statusText.textContent = 'Disabled';
-            elements.statusDot.style.backgroundColor = '#ef4444';
-        } else {
-            elements.statusIndicator.className = 'status-indicator status-inactive';
-            elements.statusText.textContent = 'Inactive';
-            elements.statusDot.style.backgroundColor = '#ef4444';
+        if (elements.statusIndicator) {
+            if (currentStatus.isActive && currentSettings.enabled) {
+                elements.statusIndicator.className = 'status-indicator status-active';
+                if (elements.statusText) elements.statusText.textContent = 'Active';
+                if (elements.statusDot) elements.statusDot.style.backgroundColor = '#10a37f';
+            } else if (!currentSettings.enabled) {
+                elements.statusIndicator.className = 'status-indicator status-inactive';
+                if (elements.statusText) elements.statusText.textContent = 'Disabled';
+                if (elements.statusDot) elements.statusDot.style.backgroundColor = '#ef4444';
+            } else {
+                elements.statusIndicator.className = 'status-indicator status-inactive';
+                if (elements.statusText) elements.statusText.textContent = 'Inactive';
+                if (elements.statusDot) elements.statusDot.style.backgroundColor = '#ef4444';
+            }
         }
 
         // Stats
-        elements.messageCount.textContent = currentStatus.messageCount || '-';
-        elements.performanceGain.textContent = currentStatus.performanceGain + '%';
+        if (elements.messageCount) elements.messageCount.textContent = currentStatus.messageCount || '-';
+        if (elements.performanceGain) elements.performanceGain.textContent = currentStatus.performanceGain + '%';
         
         // Show/hide performance badge
-        if (currentStatus.performanceGain > 0) {
-            elements.performanceBadge.style.display = 'inline-block';
-        } else {
-            elements.performanceBadge.style.display = 'none';
+        if (elements.performanceBadge) {
+            if (currentStatus.performanceGain > 0) {
+                elements.performanceBadge.style.display = 'inline-block';
+            } else {
+                elements.performanceBadge.style.display = 'none';
+            }
         }
 
         // Enable toggle
-        elements.enableToggle.classList.toggle('active', currentSettings.enabled);
+        if (elements.enableToggle) {
+            elements.enableToggle.classList.toggle('active', currentSettings.enabled);
+        }
 
         // Max messages slider
-        elements.maxMessagesSlider.value = currentSettings.maxMessages;
-        elements.maxMessagesValue.textContent = currentSettings.maxMessages;
+        if (elements.maxMessagesSlider) elements.maxMessagesSlider.value = currentSettings.maxMessages;
+        if (elements.maxMessagesValue) elements.maxMessagesValue.textContent = currentSettings.maxMessages;
 
         // Site status
-        elements.siteStatus.textContent = currentStatus.onChatGPT ? 'On ChatGPT' : 'Not on ChatGPT';
+        if (elements.siteStatus) {
+            elements.siteStatus.textContent = currentStatus.onChatGPT ? 'On ChatGPT' : 'Not on ChatGPT';
+        }
 
         // Button states
-        elements.refreshPage.disabled = !currentStatus.onChatGPT;
+        if (elements.refreshPage) {
+            elements.refreshPage.disabled = !currentStatus.onChatGPT;
+        }
 
         // Update level badge and info
         updateLevelBadge();
@@ -184,12 +206,20 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Update level badge
     function updateLevelBadge() {
+        if (!elements.levelBadge) {
+            console.warn('[LeanGPT Popup] levelBadge element not found');
+            return;
+        }
         elements.levelBadge.textContent = currentStatus.optimizationLevel.toUpperCase();
-        elements.levelBadge.className = `level-btn ${currentStatus.optimizationLevel}`;
+        elements.levelBadge.className = `level-badge ${currentStatus.optimizationLevel}`;
     }
 
     // Update performance info
     function updatePerformanceInfo() {
+        if (!elements.performanceInfo) {
+            console.warn('[LeanGPT Popup] performanceInfo element not found');
+            return;
+        }
         const level = currentStatus.optimizationLevel;
         if (level === 'light') {
             elements.performanceInfo.textContent = 'Light (minimal optimization)';
@@ -294,11 +324,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Show error state
     function showError(message) {
-        elements.statusText.textContent = 'Error';
-        elements.statusIndicator.className = 'status-indicator status-inactive';
-        elements.messageCount.textContent = '-';
-        elements.performanceGain.textContent = '-';
-        elements.performanceBadge.style.display = 'none';
+        console.error('[LeanGPT Popup] Error:', message);
+        if (elements.statusText) elements.statusText.textContent = 'Error';
+        if (elements.statusIndicator) elements.statusIndicator.className = 'status-indicator status-inactive';
+        if (elements.messageCount) elements.messageCount.textContent = '-';
+        if (elements.performanceGain) elements.performanceGain.textContent = '-';
+        if (elements.performanceBadge) elements.performanceBadge.style.display = 'none';
     }
 
     // Initialize popup
