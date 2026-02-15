@@ -1,7 +1,5 @@
 // LeanGPT Content Script - OPTIMIZATION LEVELS VERSION
 
-console.log('[LeanGPT] Content script loading for ChatGPT with optimization levels...');
-
 // State
 let isInitialized = false;
 let observer = null;
@@ -68,9 +66,13 @@ function showIndicator() {
 
 // Count messages on page
 function countMessages() {
-  const messages = document.querySelectorAll('article[data-testid^="conversation-turn-"]');
-  console.log(`[LeanGPT] Found ${messages.length} messages on page`);
-  return messages.length;
+  try {
+    const messages = document.querySelectorAll('article[data-testid^="conversation-turn-"]');
+    return messages.length;
+  } catch (error) {
+    console.warn('[LeanGPT] Error counting messages:', error);
+    return 0;
+  }
 }
 
 // Trim old messages based on optimization level
@@ -79,57 +81,53 @@ function trimMessages() {
   
   const settings = OPTIMIZATION_LEVELS[currentLevel];
   if (!settings.messageTrimming) {
-    console.log(`[LeanGPT] Message trimming disabled in ${currentLevel} mode`);
     return;
   }
   
-  const messages = document.querySelectorAll('article[data-testid^="conversation-turn-"]');
-  const messageCount = messages.length;
-  
-  console.log(`[LeanGPT] Current messages: ${messageCount}, Max allowed: ${MAX_MESSAGES}, Level: ${currentLevel}`);
-  
-  if (messageCount <= MAX_MESSAGES) {
-    console.log('[LeanGPT] No trimming needed - within limit');
-    return;
-  }
-  
-  // Calculate how many to remove
-  let toRemoveCount;
-  if (settings.aggressiveMode) {
-    // In aggressive mode, keep only 80% of MAX_MESSAGES (more aggressive trimming)
-    const targetKeep = Math.ceil(MAX_MESSAGES * 0.8);
-    toRemoveCount = Math.max(1, messageCount - targetKeep);
-  } else {
-    toRemoveCount = messageCount - MAX_MESSAGES;
-  }
-  
-  const toRemove = Array.from(messages).slice(0, toRemoveCount);
-  let removedCount = 0;
-  
-  toRemove.forEach((message, index) => {
-    try {
-      message.remove();
-      removedCount++;
-      console.log(`[LeanGPT] Removed message ${index + 1} (aggressive mode)`);
-    } catch (error) {
-      console.error('[LeanGPT] Error removing message:', error);
+  try {
+    const messages = document.querySelectorAll('article[data-testid^="conversation-turn-"]');
+    const messageCount = messages.length;
+    
+    if (messageCount <= MAX_MESSAGES) {
+      return;
     }
-  });
-  
-  console.log(`[LeanGPT] Trimmed ${removedCount} old messages, keeping last ${MAX_MESSAGES} (${currentLevel} mode)`);
-  
-  // Update indicator with count and level
-  const indicator = document.querySelector('#leangpt-indicator');
-  if (indicator) {
-    const levelEmoji = currentLevel === 'ultra' ? '⚡' : '🚀';
-    indicator.textContent = `${levelEmoji} LeanGPT (${MAX_MESSAGES}/${MAX_MESSAGES}) [${currentLevel.toUpperCase()}]`;
+    
+    // Calculate how many to remove
+    let toRemoveCount;
+    if (settings.aggressiveMode) {
+      // In aggressive mode, keep only 80% of MAX_MESSAGES (more aggressive trimming)
+      const targetKeep = Math.ceil(MAX_MESSAGES * 0.8);
+      toRemoveCount = Math.max(1, messageCount - targetKeep);
+    } else {
+      toRemoveCount = messageCount - MAX_MESSAGES;
+    }
+    
+    const toRemove = Array.from(messages).slice(0, toRemoveCount);
+    let removedCount = 0;
+    
+    toRemove.forEach((message) => {
+      try {
+        message.remove();
+        removedCount++;
+      } catch (error) {
+        console.warn('[LeanGPT] Error removing message:', error);
+      }
+    });
+    
+    // Update indicator with count and level
+    const indicator = document.querySelector('#leangpt-indicator');
+    if (indicator) {
+      const levelEmoji = currentLevel === 'ultra' ? '⚡' : '🚀';
+      indicator.textContent = `${levelEmoji} LeanGPT (${MAX_MESSAGES}/${MAX_MESSAGES}) [${currentLevel.toUpperCase()}]`;
+    }
+  } catch (error) {
+    console.warn('[LeanGPT] Error in trimMessages:', error);
   }
 }
 
 // Apply optimizations based on level
 function applyOptimizations() {
   const settings = OPTIMIZATION_LEVELS[currentLevel];
-  console.log(`[LeanGPT] Applying ${currentLevel} level optimizations:`, settings);
   
   // Disable animations (if required)
   if (!settings.animations) {
@@ -154,65 +152,74 @@ function applyOptimizations() {
 
 // Aggressive optimizations for very weak devices
 function applyAggressiveOptimizations() {
-  console.log('[LeanGPT] Applying aggressive optimizations...');
-  
-  // Reduce image quality
-  const images = document.querySelectorAll('img');
-  images.forEach(img => {
-    img.style.imageRendering = 'auto';
-    img.style.imageRendering = '-webkit-optimize-contrast';
-  });
-  
-  // Disable all transitions
-  document.body.style.transition = 'none';
-  document.body.style.animation = 'none';
-  
-  // Force GPU acceleration
-  const canvasElements = document.querySelectorAll('canvas');
-  canvasElements.forEach(canvas => {
-    canvas.style.transform = 'translateZ(0)';
-    canvas.style.willChange = 'transform';
-  });
+  try {
+    // Reduce image quality
+    const images = document.querySelectorAll('img');
+    images.forEach(img => {
+      img.style.imageRendering = 'auto';
+      img.style.imageRendering = '-webkit-optimize-contrast';
+    });
+    
+    // Disable all transitions
+    document.body.style.transition = 'none';
+    document.body.style.animation = 'none';
+    
+    // Force GPU acceleration
+    const canvasElements = document.querySelectorAll('canvas');
+    canvasElements.forEach(canvas => {
+      canvas.style.transform = 'translateZ(0)';
+      canvas.style.willChange = 'transform';
+    });
+  } catch (error) {
+    console.warn('[LeanGPT] Error in aggressive optimizations:', error);
+  }
 }
 
 // Disable all animations
 function disableAnimations() {
-  console.log('[LeanGPT] Disabling animations...');
-  const style = document.createElement('style');
-  style.textContent = `
-    * {
-      animation-duration: 0.01ms !important;
-      animation-delay: -0.01ms !important;
-      transition-duration: 0.01ms !important;
-      transition-delay: -0.01ms !important;
-      transform: none !important;
-    }
-  `;
-  document.head.appendChild(style);
+  try {
+    const style = document.createElement('style');
+    style.textContent = `
+      * {
+        animation-duration: 0.01ms !important;
+        animation-delay: -0.01ms !important;
+        transition-duration: 0.01ms !important;
+        transition-delay: -0.01ms !important;
+        transform: none !important;
+      }
+    `;
+    document.head.appendChild(style);
+  } catch (error) {
+    console.warn('[LeanGPT] Error disabling animations:', error);
+  }
 }
 
 // Optimize scrolling
 function optimizeScrolling() {
-  console.log('[LeanGPT] Optimizing scrolling...');
-  const chatContainer = document.querySelector('[class^="react-scroll-to-bottom--"]');
-  if (chatContainer) {
-    chatContainer.style.scrollBehavior = 'auto';
-    chatContainer.style.willChange = 'scroll-position';
-    chatContainer.style.overflowAnchor = 'none';
+  try {
+    const chatContainer = document.querySelector('[class^="react-scroll-to-bottom--"]');
+    if (chatContainer) {
+      chatContainer.style.scrollBehavior = 'auto';
+      chatContainer.style.willChange = 'scroll-position';
+      chatContainer.style.overflowAnchor = 'none';
+    }
+  } catch (error) {
+    console.warn('[LeanGPT] Error optimizing scrolling:', error);
   }
 }
 
 // Remove syntax highlighting
 function removeSyntaxHighlighting() {
-  console.log('[LeanGPT] Removing syntax highlighting...');
-  const codeBlocks = document.querySelectorAll('pre code, .hljs');
-  console.log(`[LeanGPT] Found ${codeBlocks.length} code blocks to optimize`);
-  codeBlocks.forEach((block, index) => {
-    block.style.backgroundColor = 'transparent';
-    block.style.color = 'inherit';
-    block.classList.remove('hljs');
-    console.log(`[LeanGPT] Optimized code block ${index + 1}`);
-  });
+  try {
+    const codeBlocks = document.querySelectorAll('pre code, .hljs');
+    codeBlocks.forEach((block) => {
+      block.style.backgroundColor = 'transparent';
+      block.style.color = 'inherit';
+      block.classList.remove('hljs');
+    });
+  } catch (error) {
+    console.warn('[LeanGPT] Error removing syntax highlighting:', error);
+  }
 }
 
 // Schedule trimming with debounce

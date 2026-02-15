@@ -4,95 +4,125 @@
     <meta charset="UTF-8">
     <title>LeanGPT - ChatGPT Performance Optimizer</title>
     <style>
+        :root {
+            --primary-color: #2563eb;
+            --primary-hover: #1d4ed8;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --text-primary: #1f2937;
+            --text-secondary: #6b7280;
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8fafc;
+            --border-color: #e5e7eb;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
         body { 
-            width: 400px;
-            min-height: 580px;
+            width: 360px;
+            min-height: 520px;
             margin: 0;
             padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
-            color: #ffffff;
-            overflow: hidden;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-size: 14px;
+            line-height: 1.4;
         }
         
         .header {
-            background: rgba(0, 212, 255, 0.1);
-            padding: 16px;
-            border-bottom: 1px solid rgba(0, 212, 255, 0.2);
-            text-align: center;
+            background: linear-gradient(135deg, var(--primary-color), #3b82f6);
+            padding: 16px 20px;
+            color: white;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
         }
         
         .logo {
             display: flex;
             align-items: center;
-            justify-content: center;
-            gap: 8px;
+            gap: 12px;
             margin-bottom: 8px;
         }
         
         .logo-icon {
-            width: 24px;
-            height: 24px;
-            background: linear-gradient(45deg, #00d4ff, #0066cc);
-            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: bold;
-            font-size: 12px;
+            font-weight: 700;
+            font-size: 16px;
         }
         
         .logo-text {
             font-size: 18px;
-            font-weight: 600;
-            color: #00d4ff;
+            font-weight: 700;
+            letter-spacing: -0.5px;
         }
         
         .subtitle {
-            font-size: 11px;
-            color: #888;
+            font-size: 12px;
+            opacity: 0.9;
             margin: 0;
+            font-weight: 400;
         }
         
-        .status-section {
+        .container {
             padding: 20px;
-            text-align: center;
+        }
+        
+        .status-card {
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+            box-shadow: var(--shadow);
+        }
+        
+        .status-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+        
+        .status-title {
+            font-weight: 600;
+            font-size: 14px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
         }
         
         .status-indicator {
-            display: inline-flex;
+            display: flex;
             align-items: center;
-            gap: 12px;
-            padding: 12px 16px;
+            gap: 8px;
+            padding: 8px 12px;
             border-radius: 20px;
-            font-size: 16px;
-            font-weight: 500;
-            margin-bottom: 16px;
-            position: relative;
-            overflow: hidden;
+            font-size: 13px;
+            font-weight: 600;
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success-color);
+            border: 1px solid rgba(16, 185, 129, 0.3);
         }
         
-        .status-active {
-            background: rgba(16, 163, 127, 0.2);
-            color: #10a37f;
-            border: 2px solid #10a37f;
-            box-shadow: 0 0 20px rgba(16, 163, 127, 0.2);
-        }
-        
-        .status-inactive {
-            background: rgba(239, 68, 68, 0.2);
-            color: #ef4444;
-            border: 2px solid #ef4444;
-            box-shadow: 0 0 20px rgba(239, 68, 68, 0.2);
+        .status-indicator.inactive {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger-color);
+            border-color: rgba(239, 68, 68, 0.3);
         }
         
         .status-dot {
-            width: 10px;
-            height: 10px;
+            width: 8px;
+            height: 8px;
             border-radius: 50%;
             background: currentColor;
+            box-shadow: 0 0 8px currentColor;
             animation: pulse 2s infinite;
-            box-shadow: 0 0 10px currentColor;
         }
         
         @keyframes pulse {
@@ -100,261 +130,292 @@
             50% { opacity: 0.5; }
         }
         
-        .level-badge {
-            position: absolute;
-            top: -8px;
-            right: -8px;
-            background: rgba(0, 0, 0, 0.8);
-            color: #00d4ff;
-            padding: 2px 6px;
-            border-radius: 10px;
-            font-size: 10px;
-            font-weight: bold;
-            font-family: monospace;
-        }
-        
-        .stats {
+        .stats-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 12px;
-            margin: 16px 0;
+            margin-top: 12px;
         }
         
-        .stat-card {
-            background: rgba(255, 255, 255, 0.05);
-            padding: 16px;
-            border-radius: 10px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+        .stat-item {
             text-align: center;
+            padding: 12px;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
         }
         
         .stat-value {
-            font-size: 24px;
-            font-weight: 600;
-            color: #00d4ff;
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--primary-color);
             display: block;
+            margin-bottom: 4px;
         }
         
         .stat-label {
-            font-size: 10px;
-            color: #888;
+            font-size: 11px;
+            color: var(--text-secondary);
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.05em;
         }
         
         .performance-bar {
             width: 100%;
-            height: 8px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 4px;
+            height: 6px;
+            background: var(--bg-secondary);
+            border-radius: 3px;
             overflow: hidden;
             margin-top: 8px;
-            position: relative;
+            border: 1px solid var(--border-color);
         }
         
         .performance-fill {
             height: 100%;
-            background: linear-gradient(90deg, #10a37f 0%, #10a37f var(--fill-amount) 100%);
+            background: linear-gradient(90deg, var(--success-color), #22c55e);
+            width: 0%;
             transition: width 0.3s ease-out;
         }
         
-        .controls {
-            padding: 0 20px 20px;
-        }
-        
         .section-title {
-            font-size: 16px;
+            font-size: 14px;
             font-weight: 600;
-            color: #00d4ff;
+            color: var(--text-primary);
+            margin: 20px 0 12px 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .section-title::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border-color);
+            margin-left: 8px;
+        }
+        
+        .control-group {
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 16px;
             margin-bottom: 16px;
-            text-align: center;
+            box-shadow: var(--shadow);
         }
         
-        .toggle-section {
-            margin-bottom: 20px;
-        }
-        
-        .toggle-label {
+        .toggle-group {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            font-size: 14px;
-            margin-bottom: 12px;
+            margin-bottom: 8px;
+        }
+        
+        .toggle-label {
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+        
+        .toggle-sublabel {
+            font-size: 11px;
+            color: var(--text-secondary);
         }
         
         .toggle-switch {
             position: relative;
-            width: 50px;
-            height: 26px;
-            background: #4a4a4a;
-            border-radius: 13px;
+            width: 44px;
+            height: 24px;
+            background: #e5e7eb;
+            border-radius: 999px;
             cursor: pointer;
-            transition: background 0.2s;
+            transition: background-color 0.2s;
+            border: 1px solid var(--border-color);
         }
         
         .toggle-switch.active {
-            background: #00d4ff;
+            background: var(--primary-color);
         }
         
         .toggle-slider {
             position: absolute;
-            top: 3px;
-            left: 3px;
+            top: 2px;
+            left: 2px;
             width: 20px;
             height: 20px;
             background: white;
             border-radius: 50%;
             transition: transform 0.2s;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
         }
         
         .toggle-switch.active .toggle-slider {
-            transform: translateX(24px);
+            transform: translateX(20px);
         }
         
-        .slider-section {
-            margin-bottom: 20px;
+        .slider-group {
+            margin-top: 16px;
         }
         
-        .slider-label {
+        .slider-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            font-size: 14px;
-            margin-bottom: 12px;
+            margin-bottom: 8px;
+        }
+        
+        .slider-label {
+            font-weight: 500;
+            color: var(--text-primary);
         }
         
         .slider-value {
-            background: rgba(0, 212, 255, 0.2);
-            padding: 6px 12px;
-            border-radius: 12px;
-            font-size: 14px;
-            font-weight: 500;
-            color: #00d4ff;
-            min-width: 30px;
-            text-align: center;
+            font-weight: 700;
+            color: var(--primary-color);
+            background: rgba(37, 99, 235, 0.1);
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 12px;
         }
         
         input[type="range"] {
             width: 100%;
-            height: 8px;
-            background: #4a4a4a;
-            border-radius: 4px;
+            height: 6px;
+            background: var(--bg-secondary);
+            border-radius: 3px;
             outline: none;
             -webkit-appearance: none;
+            border: 1px solid var(--border-color);
         }
         
         input[type="range"]::-webkit-slider-thumb {
             -webkit-appearance: none;
-            width: 18px;
-            height: 18px;
-            background: #00d4ff;
+            width: 16px;
+            height: 16px;
+            background: var(--primary-color);
             border-radius: 50%;
             cursor: pointer;
+            border: 2px solid white;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
         }
         
-        .optimization-section {
-            margin-bottom: 20px;
+        .optimization-group {
+            margin-top: 16px;
         }
         
-        .optimization-levels {
+        .level-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr 1fr 1fr;
-            gap: 10px;
-            margin-bottom: 16px;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-top: 8px;
         }
         
         .level-btn {
-            padding: 8px 12px;
-            border: none;
-            border-radius: 6px;
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background: white;
             font-size: 12px;
-            font-weight: 500;
+            font-weight: 600;
             cursor: pointer;
             transition: all 0.2s;
-            text-align: center;
-            color: white;
+            text-align: left;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
         }
         
         .level-btn:hover {
-            transform: translateY(-2px);
+            border-color: var(--primary-color);
+            background: rgba(37, 99, 235, 0.05);
         }
         
         .level-btn.active {
-            background: linear-gradient(45deg, #00d4ff, #0066cc);
-            border: 2px solid #00d4ff;
+            background: linear-gradient(135deg, var(--primary-color), #60a5fa);
+            border-color: var(--primary-color);
+            color: white;
+            box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.3);
         }
         
-        .level-btn.light {
-            background: linear-gradient(135deg, #28a745, #34d058);
+        .level-name {
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.05em;
         }
         
-        .level-btn.medium {
-            background: linear-gradient(135deg, #f59e0b, #ef4444);
+        .level-desc {
+            font-size: 10px;
+            opacity: 0.8;
+            font-weight: 400;
         }
         
-        .level-btn.aggressive {
-            background: linear-gradient(135deg, #dc2626, #787161);
+        .level-btn.active .level-desc {
+            opacity: 0.9;
         }
         
-        .level-btn.ultra {
-            background: linear-gradient(135deg, #991b1b, #5f3d0f);
-        }
-        
-        .button-group {
+        .action-group {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 10px;
+            gap: 8px;
+            margin-top: 16px;
         }
         
         .btn {
-            padding: 12px;
-            border: none;
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
             border-radius: 8px;
-            font-size: 14px;
-            font-weight: 500;
+            font-size: 13px;
+            font-weight: 600;
             cursor: pointer;
             transition: all 0.2s;
             text-align: center;
         }
         
         .btn-primary {
-            background: linear-gradient(45deg, #00d4ff, #0066cc);
+            background: var(--primary-color);
             color: white;
+            border-color: var(--primary-color);
         }
         
         .btn-primary:hover {
-            background: linear-gradient(45deg, #00b8e6, #0052a3);
-            transform: translateY(-2px);
+            background: var(--primary-hover);
+            border-color: var(--primary-hover);
+            transform: translateY(-1px);
         }
         
         .btn-secondary {
-            background: rgba(255, 255, 255, 0.1);
-            color: #ccc;
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: white;
+            color: var(--text-secondary);
+            border-color: var(--border-color);
         }
         
         .btn-secondary:hover {
-            background: rgba(255, 255, 255, 0.2);
-            transform: translateY(-2px);
+            background: var(--bg-secondary);
+            border-color: var(--text-secondary);
+            color: var(--text-primary);
         }
         
         .footer {
             padding: 16px 20px;
-            background: rgba(0, 0, 0, 0.2);
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border-color);
             text-align: center;
         }
         
         .footer-text {
-            font-size: 10px;
-            color: #666;
+            font-size: 11px;
+            color: var(--text-secondary);
         }
         
-        .performance-info {
-            font-size: 11px;
-            color: #aaa;
-            text-align: center;
-            margin-top: 8px;
+        .status-badge {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 999px;
+            font-size: 10px;
+            font-weight: 700;
+            background: rgba(37, 99, 235, 0.1);
+            color: var(--primary-color);
+            border: 1px solid rgba(37, 99, 235, 0.3);
+            margin-left: 8px;
         }
     </style>
 </head>
@@ -367,59 +428,77 @@
         <p class="subtitle">ChatGPT Performance Optimizer</p>
     </div>
     
-    <div class="status-section">
-        <div class="status-indicator" id="statusIndicator">
-            <div class="level-badge" id="levelBadge">MED</div>
-            <div class="status-dot" id="statusDot"></div>
-            <span id="statusText">Loading...</span>
-        </div>
-        
-        <div class="stats">
-            <div class="stat-card">
-                <span class="stat-value" id="messageCount">-</span>
-                <span class="stat-label">Messages</span>
+    <div class="container">
+        <div class="status-card">
+            <div class="status-header">
+                <div class="status-title">Status</div>
+                <span class="status-badge" id="levelBadge">MED</span>
             </div>
-            <div class="stat-card">
-                <span class="stat-value" id="performanceGain">-</span>
-                <span class="stat-label">Performance</span>
-                <div class="performance-bar">
-                    <div class="performance-fill" id="performanceFill"></div>
+            <div class="status-indicator" id="statusIndicator">
+                <div class="status-dot" id="statusDot"></div>
+                <span id="statusText">Loading...</span>
+            </div>
+            
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <span class="stat-value" id="messageCount">-</span>
+                    <span class="stat-label">Messages</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value" id="performanceGain">-</span>
+                    <span class="stat-label">Performance</span>
+                    <div class="performance-bar">
+                        <div class="performance-fill" id="performanceFill"></div>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-    
-    <div class="controls">
-        <div class="toggle-section">
-            <div class="toggle-label">
-                <span>Enable Optimizations</span>
+
+        <div class="control-group">
+            <div class="toggle-group">
+                <div>
+                    <div class="toggle-label">Enable Optimizations</div>
+                    <div class="toggle-sublabel">Activate performance improvements</div>
+                </div>
                 <div class="toggle-switch" id="enableToggle">
                     <div class="toggle-slider"></div>
                 </div>
             </div>
-        </div>
-        
-        <div class="slider-section">
-            <div class="slider-label">
-                <span>Max Messages</span>
-                <span class="slider-value" id="maxMessagesValue">5</span>
+            
+            <div class="slider-group">
+                <div class="slider-header">
+                    <div class="slider-label">Max Messages</div>
+                    <span class="slider-value" id="maxMessagesValue">5</span>
+                </div>
+                <input type="range" id="maxMessagesSlider" min="3" max="50" value="5" step="1">
             </div>
-            <input type="range" id="maxMessagesSlider" min="3" max="50" value="5" step="1">
-        </div>
-        
-        <div class="optimization-section">
-            <div class="section-title">Optimization Level</div>
-            <div class="optimization-levels">
-                <button class="level-btn light" id="lightBtn">Light</button>
-                <button class="level-btn medium active" id="mediumBtn">Medium</button>
-                <button class="level-btn aggressive" id="aggressiveBtn">Aggressive</button>
-                <button class="level-btn ultra" id="ultraBtn">Ultra</button>
+            
+            <div class="optimization-group">
+                <div class="section-title">Optimization Level</div>
+                <div class="level-grid">
+                    <button class="level-btn light" id="lightBtn">
+                        <div class="level-name">Light</div>
+                        <div class="level-desc">Minimal optimization</div>
+                    </button>
+                    <button class="level-btn medium active" id="mediumBtn">
+                        <div class="level-name">Medium</div>
+                        <div class="level-desc">Balanced performance</div>
+                    </button>
+                    <button class="level-btn aggressive" id="aggressiveBtn">
+                        <div class="level-name">Aggressive</div>
+                        <div class="level-desc">Maximum optimization</div>
+                    </button>
+                    <button class="level-btn ultra" id="ultraBtn">
+                        <div class="level-name">Ultra</div>
+                        <div class="level-desc">Extreme performance</div>
+                    </button>
+                </div>
             </div>
-        </div>
-        
-        <div class="button-group">
-            <button class="btn btn-primary" id="openChatgpt">Open ChatGPT</button>
-            <button class="btn btn-secondary" id="refreshPage">Refresh Page</button>
+            
+            <div class="action-group">
+                <button class="btn btn-primary" id="openChatgpt">Open ChatGPT</button>
+                <button class="btn btn-secondary" id="refreshPage">Refresh Page</button>
+            </div>
         </div>
     </div>
     

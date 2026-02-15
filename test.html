@@ -3,240 +3,509 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LeanGPT Test Page - ChatGPT Simulator</title>
+    <title>LeanGPT Popup Test</title>
     <style>
+        :root {
+            --primary-color: #2563eb;
+            --primary-hover: #1d4ed8;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --text-primary: #1f2937;
+            --text-secondary: #6b7280;
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8fafc;
+            --border-color: #e5e7eb;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
         body { 
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: #f7f7f8;
+            width: 360px;
+            min-height: 520px;
             margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-size: 14px;
+            line-height: 1.4;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, var(--primary-color), #3b82f6);
+            padding: 16px 20px;
+            color: white;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+        
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 16px;
+        }
+        
+        .logo-text {
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+        
+        .subtitle {
+            font-size: 12px;
+            opacity: 0.9;
+            margin: 0;
+            font-weight: 400;
+        }
+        
+        .container {
             padding: 20px;
         }
-        .chat-container {
-            max-width: 800px;
-            margin: 0 auto;
+        
+        .status-card {
             background: white;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+            box-shadow: var(--shadow);
+        }
+        
+        .status-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+        
+        .status-title {
+            font-weight: 600;
+            font-size: 14px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success-color);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+        
+        .status-indicator.inactive {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger-color);
+            border-color: rgba(239, 68, 68, 0.3);
+        }
+        
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: currentColor;
+            box-shadow: 0 0 8px currentColor;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 12px;
+        }
+        
+        .stat-item {
+            text-align: center;
+            padding: 12px;
+            background: var(--bg-secondary);
             border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            height: 500px;
-            overflow-y: auto;
-            padding: 20px;
+            border: 1px solid var(--border-color);
         }
-        article {
-            margin: 15px 0;
-            padding: 15px;
-            border-radius: 8px;
-            border: 1px solid #e1e5e9;
+        
+        .stat-value {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--primary-color);
+            display: block;
+            margin-bottom: 4px;
         }
-        article[data-turn="user"] {
-            background: #f7f7f8;
-            margin-left: 20%;
+        
+        .stat-label {
+            font-size: 11px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
         }
-        article[data-turn="assistant"] {
-            background: #ffffff;
-            margin-right: 20%;
-        }
-        pre {
-            background: #f6f8fa;
-            padding: 10px;
-            border-radius: 4px;
-            overflow-x: auto;
-        }
-        code {
-            background: #f6f8fa;
-            padding: 2px 4px;
-            border-radius: 3px;
-            font-family: 'Monaco', 'Consolas', monospace;
-        }
-        .input-area {
-            max-width: 800px;
-            margin: 20px auto;
-        }
-        textarea {
+        
+        .performance-bar {
             width: 100%;
-            padding: 15px;
-            border: 1px solid #d1d5db;
-            border-radius: 8px;
-            font-size: 16px;
-            resize: vertical;
+            height: 6px;
+            background: var(--bg-secondary);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-top: 8px;
+            border: 1px solid var(--border-color);
         }
-        button {
-            background: #10a37f;
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 8px;
+        
+        .performance-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--success-color), #22c55e);
+            width: 60%;
+            transition: width 0.3s ease-out;
+        }
+        
+        .section-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 20px 0 12px 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .section-title::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border-color);
+            margin-left: 8px;
+        }
+        
+        .control-group {
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+            box-shadow: var(--shadow);
+        }
+        
+        .toggle-group {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+        
+        .toggle-label {
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+        
+        .toggle-sublabel {
+            font-size: 11px;
+            color: var(--text-secondary);
+        }
+        
+        .toggle-switch {
+            position: relative;
+            width: 44px;
+            height: 24px;
+            background: #e5e7eb;
+            border-radius: 999px;
             cursor: pointer;
-            font-size: 16px;
-            margin-top: 10px;
+            transition: background-color 0.2s;
+            border: 1px solid var(--border-color);
         }
-        button:hover {
-            background: #0d8f70;
+        
+        .toggle-switch.active {
+            background: var(--primary-color);
         }
-        .status {
-            position: fixed;
-            top: 10px;
-            right: 10px;
-            background: #333;
-            color: white;
-            padding: 10px;
-            border-radius: 4px;
+        
+        .toggle-slider {
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            transition: transform 0.2s;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        }
+        
+        .toggle-switch.active .toggle-slider {
+            transform: translateX(20px);
+        }
+        
+        .slider-group {
+            margin-top: 16px;
+        }
+        
+        .slider-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+        
+        .slider-label {
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+        
+        .slider-value {
+            font-weight: 700;
+            color: var(--primary-color);
+            background: rgba(37, 99, 235, 0.1);
+            padding: 4px 8px;
+            border-radius: 6px;
             font-size: 12px;
         }
-        .message-count {
-            font-weight: bold;
-            color: #10a37f;
+        
+        input[type="range"] {
+            width: 100%;
+            height: 6px;
+            background: var(--bg-secondary);
+            border-radius: 3px;
+            outline: none;
+            -webkit-appearance: none;
+            border: 1px solid var(--border-color);
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            background: var(--primary-color);
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid white;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        
+        .optimization-group {
+            margin-top: 16px;
+        }
+        
+        .level-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-top: 8px;
+        }
+        
+        .level-btn {
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background: white;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: left;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        
+        .level-btn:hover {
+            border-color: var(--primary-color);
+            background: rgba(37, 99, 235, 0.05);
+        }
+        
+        .level-btn.active {
+            background: linear-gradient(135deg, var(--primary-color), #60a5fa);
+            border-color: var(--primary-color);
+            color: white;
+            box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.3);
+        }
+        
+        .level-name {
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+        }
+        
+        .level-desc {
+            font-size: 10px;
+            opacity: 0.8;
+            font-weight: 400;
+        }
+        
+        .level-btn.active .level-desc {
+            opacity: 0.9;
+        }
+        
+        .action-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-top: 16px;
+        }
+        
+        .btn {
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+        
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+        
+        .btn-primary:hover {
+            background: var(--primary-hover);
+            border-color: var(--primary-hover);
+            transform: translateY(-1px);
+        }
+        
+        .btn-secondary {
+            background: white;
+            color: var(--text-secondary);
+            border-color: var(--border-color);
+        }
+        
+        .btn-secondary:hover {
+            background: var(--bg-secondary);
+            border-color: var(--text-secondary);
+            color: var(--text-primary);
+        }
+        
+        .footer {
+            padding: 16px 20px;
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+        }
+        
+        .footer-text {
+            font-size: 11px;
+            color: var(--text-secondary);
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 999px;
+            font-size: 10px;
+            font-weight: 700;
+            background: rgba(37, 99, 235, 0.1);
+            color: var(--primary-color);
+            border: 1px solid rgba(37, 99, 235, 0.3);
+            margin-left: 8px;
         }
     </style>
 </head>
 <body>
-    <div class="status" id="status">
-        LeanGPT Status: <span id="extension-status">Unknown</span><br>
-        Messages: <span class="message-count" id="message-count">0</span>
+    <div class="header">
+        <div class="logo">
+            <div class="logo-icon">⚡</div>
+            <div class="logo-text">LeanGPT</div>
+        </div>
+        <p class="subtitle">ChatGPT Performance Optimizer</p>
     </div>
-
-    <div class="chat-container react-scroll-to-bottom--abc123">
-        <h2>ChatGPT Performance Test</h2>
-        <p>This page simulates ChatGPT's DOM structure to test LeanGPT extension.</p>
-        
-        <!-- Test messages that should be trimmed -->
-        <article data-testid="conversation-turn-1" data-turn="user">
-            <strong>User:</strong> Can you help me understand recursion?
-        </article>
-        
-        <article data-testid="conversation-turn-2" data-turn="assistant">
-            <strong>Assistant:</strong> I'd be happy to explain recursion! Recursion is a programming concept where a function calls itself to solve a problem.
-        </article>
-        
-        <article data-testid="conversation-turn-3" data-turn="user">
-            <strong>User:</strong> Can you give me an example with code?
-        </article>
-        
-        <article data-testid="conversation-turn-4" data-turn="assistant">
-            <strong>Assistant:</strong> Sure! Here's a classic factorial example:
-            <pre><code>function factorial(n) {
-    if (n <= 1) return 1;
-    return n * factorial(n - 1);
-}</code></pre>
-        </article>
-        
-        <article data-testid="conversation-turn-5" data-turn="user">
-            <strong>User:</strong> What happens with factorial(5)?
-        </article>
-        
-        <article data-testid="conversation-turn-6" data-turn="assistant">
-            <strong>Assistant:</strong> factorial(5) would calculate: 5 × 4 × 3 × 2 × 1 = 120
-        </article>
-        
-        <article data-testid="conversation-turn-7" data-turn="user">
-            <strong>User:</strong> Is recursion always the best approach?
-        </article>
-        
-        <article data-testid="conversation-turn-8" data-turn="assistant">
-            <strong>Assistant:</strong> Not always! Recursion can be elegant but may have performance overhead. Sometimes iterative solutions are better.
-        </article>
-        
-        <article data-testid="conversation-turn-9" data-turn="user">
-            <strong>User:</strong> When should I use iteration instead?
-        </article>
-        
-        <article data-testid="conversation-turn-10" data-turn="assistant">
-            <strong>Assistant:</strong> Consider iteration when: dealing with large datasets, concerned about stack overflow, or optimizing for performance.
-        </article>
-        
-        <article data-testid="conversation-turn-11" data-turn="user">
-            <strong>User:</strong> Can you show the factorial function iteratively?
-        </article>
-        
-        <article data-testid="conversation-turn-12" data-turn="assistant">
-            <strong>Assistant:</strong> Here's the iterative version:
-            <pre><code>function factorialIterative(n) {
-    let result = 1;
-    for (let i = 2; i <= n; i++) {
-        result *= i;
-    }
-    return result;
-}</code></pre>
-        </article>
-        
-        <article data-testid="conversation-turn-13" data-turn="user">
-            <strong>User:</strong> Which one is faster?
-        </article>
-        
-        <article data-testid="conversation-turn-14" data-turn="assistant">
-            <strong>Assistant:</strong> The iterative version is generally faster due to function call overhead and stack operations.
-        </article>
-        
-        <article data-testid="conversation-turn-15" data-turn="user">
-            <strong>User:</strong> Thanks for the explanation!
-        </article>
-    </div>
-
-    <div class="input-area">
-        <textarea id="prompt-textarea" placeholder="Type your message here..."></textarea>
-        <button onclick="addMessage()">Send Message</button>
-    </div>
-
-    <script>
-        let messageCount = 15;
-        
-        function updateMessageCount() {
-            const messages = document.querySelectorAll('article[data-testid^="conversation-turn-"]');
-            document.getElementById('message-count').textContent = messages.length;
-        }
-        
-        function addMessage() {
-            const textarea = document.getElementById('prompt-textarea');
-            const container = document.querySelector('.chat-container');
+    
+    <div class="container">
+        <div class="status-card">
+            <div class="status-header">
+                <div class="status-title">Status</div>
+                <span class="status-badge">MED</span>
+            </div>
+            <div class="status-indicator">
+                <div class="status-dot"></div>
+                <span>Active</span>
+            </div>
             
-            if (textarea.value.trim()) {
-                messageCount++;
-                
-                // Add user message
-                const userMsg = document.createElement('article');
-                userMsg.setAttribute('data-testid', `conversation-turn-${messageCount}`);
-                userMsg.setAttribute('data-turn', 'user');
-                userMsg.innerHTML = `<strong>User:</strong> ${textarea.value}`;
-                container.appendChild(userMsg);
-                
-                messageCount++;
-                
-                // Add assistant response after a delay
-                setTimeout(() => {
-                    const assistantMsg = document.createElement('article');
-                    assistantMsg.setAttribute('data-testid', `conversation-turn-${messageCount}`);
-                    assistantMsg.setAttribute('data-turn', 'assistant');
-                    assistantMsg.innerHTML = `<strong>Assistant:</strong> This is a simulated response to: "${textarea.value}"`;
-                    container.appendChild(assistantMsg);
-                    updateMessageCount();
-                }, 500);
-                
-                textarea.value = '';
-                updateMessageCount();
-            }
-        }
-        
-        // Check if LeanGPT is active
-        function checkLeanGPT() {
-            if (typeof window.LeanGPT !== 'undefined') {
-                document.getElementById('extension-status').textContent = 'Active ✅';
-                document.getElementById('extension-status').style.color = '#10a37f';
-            } else {
-                document.getElementById('extension-status').textContent = 'Not detected ❌';
-                document.getElementById('extension-status').style.color = '#ef4444';
-            }
-        }
-        
-        // Update counts and check extension
-        updateMessageCount();
-        setInterval(checkLeanGPT, 1000);
-        
-        // Listen for Enter key
-        document.getElementById('prompt-textarea').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                addMessage();
-            }
-        });
-    </script>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <span class="stat-value">8</span>
+                    <span class="stat-label">Messages</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value">45%</span>
+                    <span class="stat-label">Performance</span>
+                    <div class="performance-bar">
+                        <div class="performance-fill"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="control-group">
+            <div class="toggle-group">
+                <div>
+                    <div class="toggle-label">Enable Optimizations</div>
+                    <div class="toggle-sublabel">Activate performance improvements</div>
+                </div>
+                <div class="toggle-switch active">
+                    <div class="toggle-slider"></div>
+                </div>
+            </div>
+            
+            <div class="slider-group">
+                <div class="slider-header">
+                    <div class="slider-label">Max Messages</div>
+                    <span class="slider-value">5</span>
+                </div>
+                <input type="range" id="maxMessagesSlider" min="3" max="50" value="5" step="1">
+            </div>
+            
+            <div class="optimization-group">
+                <div class="section-title">Optimization Level</div>
+                <div class="level-grid">
+                    <button class="level-btn light">
+                        <div class="level-name">Light</div>
+                        <div class="level-desc">Minimal optimization</div>
+                    </button>
+                    <button class="level-btn medium active">
+                        <div class="level-name">Medium</div>
+                        <div class="level-desc">Balanced performance</div>
+                    </button>
+                    <button class="level-btn aggressive">
+                        <div class="level-name">Aggressive</div>
+                        <div class="level-desc">Maximum optimization</div>
+                    </button>
+                    <button class="level-btn ultra">
+                        <div class="level-name">Ultra</div>
+                        <div class="level-desc">Extreme performance</div>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="action-group">
+                <button class="btn btn-primary">Open ChatGPT</button>
+                <button class="btn btn-secondary">Refresh Page</button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="footer">
+        <p class="footer-text">Version 1.0.0-OPTIMIZED • <span>On ChatGPT</span></p>
+        <p class="performance-info">Medium: Balanced performance and functionality</p>
+    </div>
 </body>
 </html>

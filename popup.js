@@ -166,17 +166,17 @@ document.addEventListener('DOMContentLoaded', function() {
         // Status indicator
         if (elements.statusIndicator) {
             if (currentStatus.isActive && currentSettings.enabled) {
-                elements.statusIndicator.className = 'status-indicator status-active';
+                elements.statusIndicator.className = 'status-indicator';
                 if (elements.statusText) elements.statusText.textContent = 'Active';
-                if (elements.statusDot) elements.statusDot.style.backgroundColor = '#10a37f';
+                if (elements.statusDot) elements.statusDot.style.backgroundColor = 'var(--success-color)';
             } else if (!currentSettings.enabled) {
-                elements.statusIndicator.className = 'status-indicator status-inactive';
+                elements.statusIndicator.className = 'status-indicator inactive';
                 if (elements.statusText) elements.statusText.textContent = 'Disabled';
-                if (elements.statusDot) elements.statusDot.style.backgroundColor = '#ef4444';
+                if (elements.statusDot) elements.statusDot.style.backgroundColor = 'var(--danger-color)';
             } else {
-                elements.statusIndicator.className = 'status-indicator status-inactive';
+                elements.statusIndicator.className = 'status-indicator inactive';
                 if (elements.statusText) elements.statusText.textContent = 'Inactive';
-                if (elements.statusDot) elements.statusDot.style.backgroundColor = '#ef4444';
+                if (elements.statusDot) elements.statusDot.style.backgroundColor = 'var(--danger-color)';
             }
         }
 
@@ -184,13 +184,15 @@ document.addEventListener('DOMContentLoaded', function() {
         if (elements.messageCount) elements.messageCount.textContent = currentStatus.messageCount || '-';
         if (elements.performanceGain) elements.performanceGain.textContent = currentStatus.performanceGain + '%';
         
-        // Show/hide level badge based on performance
+        // Update performance bar
+        if (elements.performanceFill) {
+            const percentage = Math.min(currentStatus.performanceGain, 100);
+            elements.performanceFill.style.width = `${percentage}%`;
+        }
+
+        // Level badge
         if (elements.levelBadge) {
-            if (currentStatus.performanceGain > 0) {
-                elements.levelBadge.style.display = 'block';
-            } else {
-                elements.levelBadge.style.display = 'none';
-            }
+            elements.levelBadge.textContent = currentStatus.optimizationLevel.toUpperCase();
         }
 
         // Enable toggle
@@ -212,22 +214,11 @@ document.addEventListener('DOMContentLoaded', function() {
             elements.refreshPage.disabled = !currentStatus.onChatGPT;
         }
 
-        // Update level badge and info
-        updateLevelBadge();
-        updatePerformanceInfo();
-        
         // Update button states
         updateButtonStates(currentSettings.optimizationLevel);
-    }
-
-    // Update level badge
-    function updateLevelBadge() {
-        if (!elements.levelBadge) {
-            console.warn('[LeanGPT Popup] levelBadge element not found');
-            return;
-        }
-        elements.levelBadge.textContent = currentStatus.optimizationLevel.toUpperCase();
-        elements.levelBadge.className = `level-badge ${currentStatus.optimizationLevel}`;
+        
+        // Update performance info
+        updatePerformanceInfo();
     }
 
     // Update performance info
@@ -238,15 +229,15 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         const level = currentStatus.optimizationLevel;
         if (level === 'light') {
-            elements.performanceInfo.textContent = 'Light (minimal optimization)';
+            elements.performanceInfo.textContent = 'Light: Minimal optimization, preserves most features';
         } else if (level === 'medium') {
-            elements.performanceInfo.textContent = 'Medium (balanced)';
+            elements.performanceInfo.textContent = 'Medium: Balanced performance and functionality';
         } else if (level === 'aggressive') {
-            elements.performanceInfo.textContent = 'Aggressive (heavy optimization)';
+            elements.performanceInfo.textContent = 'Aggressive: Maximum optimization for slow devices';
         } else if (level === 'ultra') {
-            elements.performanceInfo.textContent = 'Ultra (maximum optimization)';
+            elements.performanceInfo.textContent = 'Ultra: Extreme optimization for very old hardware';
         } else {
-            elements.performanceInfo.textContent = 'Custom level';
+            elements.performanceInfo.textContent = 'Custom optimization level';
         }
     }
 
