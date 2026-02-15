@@ -6,11 +6,12 @@ A lightweight Chrome extension that dramatically improves ChatGPT performance on
 
 LeanGPT optimizes your ChatGPT experience by:
 
-- **✂️ Message Trimming** - Keeps only the last 10 messages in browser memory
-- **🚫 Animation Killing** - Disables all CSS transitions and animations
+- **✂️ Message Trimming** - Keeps only the last 3-20 messages in browser memory (configurable)
+- **🚫 Animation Killing** - Disables all CSS transitions and animations (configurable)
 - **⚡ Scroll Optimization** - Throttles scroll events for smoother performance
-- **🎨 Syntax Highlighting Removal** - Removes code block highlighting overhead
+- **🎨 Syntax Highlighting Removal** - Removes code block highlighting overhead (configurable)
 - **🔧 Memory Management** - Prevents memory leaks and excessive DOM growth
+- **🎯 Optimization Levels** - 4 preset levels: Light, Medium, Aggressive, Ultra
 
 ## 🎯 Why This Works
 
@@ -91,19 +92,19 @@ article[data-testid^="conversation-turn-"]  // Chat messages
 ```javascript
 // Safe message identification
 const messages = document.querySelectorAll(
-  'article[data-testid^="conversation-turn-"]'
+  'article[data-testid^="conversation-turn--"]'
 );
 
-// Keep only last 10 messages
-if (messages.length > 10) {
-  const toRemove = Array.from(messages).slice(0, -10);
+// Keep only last N messages (configurable 3-20)
+if (messages.length > MAX_MESSAGES) {
+  const toRemove = Array.from(messages).slice(0, -MAX_MESSAGES);
   toRemove.forEach(msg => msg.remove());
 }
 ```
 
 ### Performance Optimization
 ```css
-/* Disable all animations */
+/* Disable all animations (configurable) */
 * {
   transition: none !important;
   animation: none !important;
@@ -119,16 +120,23 @@ if (messages.length > 10) {
 ## 🎛️ Features
 
 ### Core Features (Always Active)
-- **Message Trimming** - Keeps last 10 messages in DOM
-- **Animation Disabling** - Removes all CSS transitions
+- **Message Trimming** - Keeps last 3-20 messages in DOM (configurable)
+- **Animation Disabling** - Removes all CSS transitions (configurable)
 - **Scroll Optimization** - Throttles scroll events
 - **Memory Management** - Prevents memory leaks
 
+### Optimization Levels
+- **💡 Light Mode** - Minimal optimization, preserves most features (3-5 messages)
+- **⚡ Medium Mode** - Balanced performance and functionality (5-10 messages)
+- **🔥 Aggressive Mode** - Maximum optimization for slow devices (8-15 messages)
+- **🚀 Ultra Mode** - Extreme optimization for very old hardware (10-20 messages)
+
 ### Performance Optimizations
-- **Syntax Highlighting Removal** - Reduces code rendering overhead
+- **Syntax Highlighting Removal** - Reduces code rendering overhead (configurable)
 - **CSS Containment** - Improves layout performance
 - **Event Throttling** - Reduces CPU usage
 - **DOM Batching** - Groups operations to reduce reflows
+- **GPU Acceleration** - Forces hardware rendering in aggressive modes
 
 ### Safety Mechanisms
 - **Selector Validation** - Only targets known message elements
@@ -142,8 +150,9 @@ LeanGPT works silently in the background, but you can verify it's active:
 
 1. **Open ChatGPT** - Extension activates automatically
 2. **Open DevTools** (F12) - Check Console for `[LeanGPT]` messages
-3. **Long Conversation** - After 10+ messages, older ones disappear
+3. **Long Conversation** - After configured message limit, older ones disappear
 4. **Smooth Scrolling** - Notice improved performance
+5. **Draggable Indicator** - Visual indicator shows current optimization level
 
 ## 🔍 Debugging
 
@@ -160,7 +169,9 @@ This shows:
   isActive: true,
   messageCount: 8,
   maxMessages: 10,
-  version: "0.1.0"
+  version: "1.0.0-OPTIMIZED",
+  optimizationLevel: "medium",
+  performanceGain: 45
 }
 ```
 
@@ -176,24 +187,28 @@ This shows:
 1. **This is Normal** - LeanGPT removes old messages for performance
 2. **Conversation is Safe** - All data remains on ChatGPT servers
 3. **Restore History** - Refresh page to see all messages
-4. **Adjust Threshold** - Modify `MAX_MESSAGES` in content.js (advanced)
+4. **Adjust Threshold** - Modify message limit in popup settings
 
 ### Performance Issues
 1. **Restart Browser** - Clear any memory issues
 2. **Check Other Extensions** - Disable conflicting extensions
 3. **Update Chrome** - Ensure latest browser version
-4. **Device Limitations** - Some very old devices may need ultra mode
+4. **Device Limitations** - Try Ultra mode for very old devices
 
 ## 🔧 Advanced Configuration
 
 ### Customize Message Limit
-Edit `content.js` and change:
-```javascript
-const CONFIG = {
-  MAX_MESSAGES: 10,  // Change this value
-  // ...
-};
-```
+1. Click the LeanGPT extension icon
+2. Use the slider to set max messages (3-50)
+3. Changes apply immediately
+
+### Change Optimization Level
+1. Click the LeanGPT extension icon
+2. Select from 4 preset levels:
+   - **Light** - Minimal optimization, preserves features
+   - **Medium** - Balanced performance (default)
+   - **Aggressive** - Maximum optimization for slow devices
+   - **Ultra** - Extreme optimization for very old hardware
 
 ### Enable Debug Mode
 Edit `content.js` and change:
