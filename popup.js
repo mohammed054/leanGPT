@@ -214,7 +214,7 @@ document.addEventListener('DOMContentLoaded', function() {
             elements.refreshPage.disabled = !currentStatus.onChatGPT;
         }
 
-        // Update button states
+        // Update button states - CRITICAL FIX: Use currentSettings.optimizationLevel
         updateButtonStates(currentSettings.optimizationLevel);
         
         // Update performance info

@@ -352,6 +352,85 @@
             opacity: 0.9;
         }
         
+        .level-icon {
+            font-size: 16px;
+            align-self: center;
+            margin-bottom: 4px;
+        }
+        
+        .level-specs {
+            font-size: 9px;
+            opacity: 0.7;
+            font-weight: 400;
+            margin-top: 2px;
+            border-top: 1px solid rgba(0,0,0,0.1);
+            padding-top: 2px;
+        }
+        
+        .level-btn.active .level-specs {
+            opacity: 0.9;
+            border-top-color: rgba(255,255,255,0.3);
+        }
+        
+        /* Enhanced animations */
+        .level-btn {
+            transform: translateY(0);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .level-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .level-btn.active {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(37, 99, 235, 0.4);
+        }
+        
+        /* Better status indicator animations */
+        .status-indicator {
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-5px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* Enhanced performance bar */
+        .performance-fill {
+            background: linear-gradient(90deg, #10b981, #22c55e, #84cc16);
+            box-shadow: 0 0 10px rgba(16, 185, 129, 0.3);
+        }
+        
+        /* Better button styling */
+        .btn {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+        
+        .btn:hover::after {
+            left: 100%;
+        }
+        
         .action-group {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -477,20 +556,28 @@
                 <div class="section-title">Optimization Level</div>
                 <div class="level-grid">
                     <button class="level-btn light" id="lightBtn">
+                        <div class="level-icon">💡</div>
                         <div class="level-name">Light</div>
                         <div class="level-desc">Minimal optimization</div>
+                        <div class="level-specs">3-5 messages • Preserves features</div>
                     </button>
-                    <button class="level-btn medium active" id="mediumBtn">
+                    <button class="level-btn medium" id="mediumBtn">
+                        <div class="level-icon">⚡</div>
                         <div class="level-name">Medium</div>
                         <div class="level-desc">Balanced performance</div>
+                        <div class="level-specs">5-10 messages • Best balance</div>
                     </button>
                     <button class="level-btn aggressive" id="aggressiveBtn">
+                        <div class="level-icon">🔥</div>
                         <div class="level-name">Aggressive</div>
                         <div class="level-desc">Maximum optimization</div>
+                        <div class="level-specs">8-15 messages • Fast performance</div>
                     </button>
                     <button class="level-btn ultra" id="ultraBtn">
+                        <div class="level-icon">🚀</div>
                         <div class="level-name">Ultra</div>
                         <div class="level-desc">Extreme performance</div>
+                        <div class="level-specs">10-20 messages • Maximum speed</div>
                     </button>
                 </div>
             </div>
