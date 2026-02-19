@@ -65,9 +65,18 @@ function showIndicator() {
     cursor: grab;
     user-select: none;
     touch-action: none;
-    transition: all 0.2s ease;
     backdrop-filter: blur(4px);
   `;
+  
+  try {
+    const savedPos = localStorage.getItem('leangpt-indicator-pos');
+    if (savedPos) {
+      const pos = JSON.parse(savedPos);
+      indicator.style.left = pos.left;
+      indicator.style.top = pos.top;
+      indicator.style.right = 'auto';
+    }
+  } catch (e) {}
   
   // Create content structure
   const contentWrapper = document.createElement('div');
@@ -115,19 +124,17 @@ function showIndicator() {
   indicator.appendChild(dragHandle);
   document.body.appendChild(indicator);
   
-  // Add drag functionality
   makeDraggable(indicator);
   
-  // Add hover effects
   indicator.addEventListener('mouseenter', () => {
-    indicator.style.transform = 'translateY(-2px) scale(1.02)';
-    indicator.style.boxShadow = '0 10px 25px rgba(0,0,0,0.35)';
-    dragHandle.style.opacity = '0.3';
+    if (indicator.style.cursor !== 'grabbing') {
+      indicator.style.boxShadow = '0 10px 25px rgba(0,0,0,0.35)';
+      dragHandle.style.opacity = '0.3';
+    }
   });
   
   indicator.addEventListener('mouseleave', () => {
-    if (!indicator.style.cursor || indicator.style.cursor !== 'grabbing') {
-      indicator.style.transform = 'translateY(0) scale(1)';
+    if (indicator.style.cursor !== 'grabbing') {
       indicator.style.boxShadow = '0 6px 20px rgba(0,0,0,0.25)';
       dragHandle.style.opacity = '0';
     }
@@ -139,84 +146,68 @@ function showIndicator() {
 // Make element draggable
 function makeDraggable(element) {
   let isDragging = false;
-  let currentX;
-  let currentY;
-  let initialX;
-  let initialY;
-  let xOffset = 0;
-  let yOffset = 0;
+  let startX, startY;
+  let startLeft, startTop;
 
   element.addEventListener('mousedown', dragStart);
-  element.addEventListener('mouseup', dragEnd);
-  element.addEventListener('mouseleave', dragEnd);
-  element.addEventListener('mousemove', drag);
   
-  // Touch support
-  element.addEventListener('touchstart', dragStart, { passive: false });
-  element.addEventListener('touchend', dragEnd);
-  element.addEventListener('touchmove', drag, { passive: false });
-
   function dragStart(e) {
+    e.preventDefault();
     isDragging = true;
     
-    // Handle both mouse and touch events
-    const clientX = e.type === 'touchstart' ? e.touches[0].clientX : e.clientX;
-    const clientY = e.type === 'touchstart' ? e.touches[0].clientY : e.clientY;
-    
-    initialX = clientX - xOffset;
-    initialY = clientY - yOffset;
-
-    // Get current position
     const rect = element.getBoundingClientRect();
-    xOffset = rect.left;
-    yOffset = rect.top;
+    startX = e.clientX;
+    startY = e.clientY;
+    startLeft = rect.left;
+    startTop = rect.top;
     
-    // Change cursor and add visual feedback
     element.style.cursor = 'grabbing';
     element.style.boxShadow = '0 8px 24px rgba(0,0,0,0.4)';
     element.style.transform = 'scale(1.02)';
-  }
-
-  function dragEnd(e) {
-    isDragging = false;
-    element.style.cursor = 'grab';
-    element.style.boxShadow = '0 4px 12px rgba(0,0,0,0.3)';
-    element.style.transform = 'scale(1)';
+    element.style.right = 'auto';
+    element.style.left = startLeft + 'px';
+    element.style.top = startTop + 'px';
+    
+    document.addEventListener('mousemove', drag);
+    document.addEventListener('mouseup', dragEnd);
   }
 
   function drag(e) {
-    if (isDragging === false) {
-      return;
-    }
-
+    if (!isDragging) return;
     e.preventDefault();
     
-    // Handle both mouse and touch events
-    const clientX = e.type === 'touchmove' ? e.touches[0].clientX : e.clientX;
-    const clientY = e.type === 'touchmove' ? e.touches[0].clientY : e.clientY;
-
-    currentX = clientX - initialX;
-    currentY = clientY - initialY;
-
-    xOffset = currentX;
-    yOffset = currentY;
-
-    // Apply boundaries to keep element on screen
+    const deltaX = e.clientX - startX;
+    const deltaY = e.clientY - startY;
+    
+    let newLeft = startLeft + deltaX;
+    let newTop = startTop + deltaY;
+    
     const rect = element.getBoundingClientRect();
     const maxX = window.innerWidth - rect.width;
     const maxY = window.innerHeight - rect.height;
     
-    // Ensure element stays within viewport
-    if (xOffset < 0) xOffset = 0;
-    if (yOffset < 0) yOffset = 0;
-    if (xOffset > maxX) xOffset = maxX;
-    if (yOffset > maxY) yOffset = maxY;
-
-    setTranslate(xOffset, yOffset, element);
+    newLeft = Math.max(0, Math.min(newLeft, maxX));
+    newTop = Math.max(0, Math.min(newTop, maxY));
+    
+    element.style.left = newLeft + 'px';
+    element.style.top = newTop + 'px';
   }
 
-  function setTranslate(xPos, yPos, el) {
-    el.style.transform = `translate(${xPos}px, ${yPos}px)`;
+  function dragEnd() {
+    isDragging = false;
+    element.style.cursor = 'grab';
+    element.style.boxShadow = '0 6px 20px rgba(0,0,0,0.25)';
+    element.style.transform = 'none';
+    
+    document.removeEventListener('mousemove', drag);
+    document.removeEventListener('mouseup', dragEnd);
+    
+    try {
+      localStorage.setItem('leangpt-indicator-pos', JSON.stringify({
+        left: element.style.left,
+        top: element.style.top
+      }));
+    } catch (e) {}
   }
 }
 
